@@ -9,7 +9,7 @@ class WebAccessRoutes {
     }
 
     getStatusPage(req, res, next) {
-        res.send('Hello World')
+        res.render('index');
     }
 }
 
