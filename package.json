@@ -1,0 +1,23 @@
+{
+  "name": "queue-status",
+  "version": "1.0.0",
+  "description": "Serves call-queue status on single webpage",
+  "main": "server.js",
+  "scripts": {
+    "start": "npx nodemon server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/machinegunflows/queue-status.git"
+  },
+  "author": "Samuel Huebner",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/machinegunflows/queue-status/issues"
+  },
+  "homepage": "https://github.com/machinegunflows/queue-status#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
