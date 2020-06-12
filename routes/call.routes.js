@@ -11,9 +11,14 @@ class CallRoutes {
         this.router.post('/', this.processCallHandler.bind(this));    
     }
 
-    processCallHandler(req, res, next) {
-        this.controller.determineCallStatus(req.body)
+    async processCallHandler(req, res, next) {
+        await this.controller.determineCallStatus(req.body)
             .then((response) => res.send(response))
             .catch((e) => next(e));
     }
+}
+
+module.exports = {
+    url: '/call',
+    router: new CallRoutes().router
 }

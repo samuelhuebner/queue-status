@@ -1,3 +1,16 @@
 p {
     font-size: larger;
 }
+
+body {
+    height: 100%;
+}
+
+.container {
+    margin-top: 20%;
+    text-align: center;
+}
+
+h1 {
+    font-family: 'Noto Sans KR', sans-serif;
+}

@@ -1,11 +1,11 @@
 'use strict';
-
 const Express = require('express');
 const { error, debug } = require('./middleware');
 
 class Server {
     constructor(routes) {
         this.app = new Express();
+        this.app.use(Express.json());
         this.app.use(error);
         this.app.use(debug);
         this.app.use(routes);

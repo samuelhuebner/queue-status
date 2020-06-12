@@ -1,3 +1,4 @@
 module.exports = {
-    CallProcessingController: require('./call-processing.controller')
+    CallProcessingController: require('./call-processing.controller'),
+    QueueInfoController: require('./queue-info.controller')
 }

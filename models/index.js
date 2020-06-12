@@ -34,6 +34,9 @@ Object.keys(db).forEach(modelName => {
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
-db.sequelize.sync();
+db.sequelize.sync()
+  .then(() => {
+    db.queue.update({ callsWaiting: 0 }, { where: { queueName: process.env.HOTLINE_NAME } });
+  });
 
 module.exports = db;
