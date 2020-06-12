@@ -14,10 +14,10 @@ module.exports = (sequelize, DataTypes) => {
         number: {
             type: DataTypes.STRING(30)
         }
-    }, { tableName: 'snippets_callDestination', timestamps: false });
+    }, { tableName: 'callDestination', timestamps: false });
 
     callDestination.associate = (models) => {
-        models.callDestination.hasMany(models.call);
+        models.callDestination.hasMany(models.call, { foreignKey: { name: 'callerId' } });
     }
 
     return callDestination;

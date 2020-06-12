@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
             primaryKey: true,
             autoIncrement: true
         },
-        phone_number: {
+        phoneNumber: {
             type: DataTypes.STRING(30),
             allowNull: true
         },
@@ -13,19 +13,19 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.INTEGER,
             allowNull: true
         },
-        first_contact_date: {
+        firstContactDate: {
             type: DataTypes.DATE,
             allowNull: false,
             defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
         },
-        last_contact_date: {
+        lastContactDate: {
             type: DataTypes.DATE,
             allowNull: true
         }
-    });
+    }, { tableName: 'caller', timestamps: false });
 
     caller.associate = (models) => {
-        models.caller.hasMany(models.call, { foreignKey: { name: 'caller_id'} });
+        models.caller.hasMany(models.call, { foreignKey: { name: 'callerId'} });
     }
 
     return caller;

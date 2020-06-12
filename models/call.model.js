@@ -1,36 +1,36 @@
 module.exports = (sequelize, DataTypes) => {
-    const call = sequelize.define('car', {
+    const call = sequelize.define('call', {
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true
         },
-        call_id: {
+        callId: {
             type: DataTypes.STRING,
             allowNull: false
         },
-        call_initiation_time: {
+        callInitiationTime: {
             type: DataTypes.DATE,
             allowNull: false,
             defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
         },
-        call_pickup_time: {
+        callPickupTime: {
             type: DataTypes.DATE,
             allowNull: true
         },
-        call_ending_time: {
+        callEndingTime: {
             type: DataTypes.DATE,
             allowNull: true
         },
-        called_number: {
+        calledNumber: {
             type: DataTypes.INTEGER(30),
             allowNull: false
         }
-    }, { tableName: 'snippets_call', timestamps: false });
+    }, { tableName: 'call', timestamps: false });
 
     call.associate = (models) => {
-        models.call.belongsTo(models.caller, { foreignKey: { name: 'caller_id', allowNull: false } });
-        models.call.belongsTo(models.callDestionation, { foreignKey: { name: 'destination_id', allowNull: true } });
+        models.call.belongsTo(models.caller, { foreignKey: { name: 'callerId', allowNull: false } });
+        models.call.belongsTo(models.callDestination, { foreignKey: { name: 'destinationId', allowNull: true } });
     }
 
     return call;
