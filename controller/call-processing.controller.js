@@ -1,7 +1,8 @@
 const _ = require('lodash');
 const db = require('../models');
+const event = require('../services/event.service');
 
-const { NotFoundError, BadRequestError, FailedTransactionError } = require('../errors');
+const { NotFoundError, BadRequestError } = require('../errors');
 
 class CallProcessingController {
 
@@ -39,6 +40,7 @@ class CallProcessingController {
             writeData.calledNumber = _.get(data, 'destination.number');
 
             if (writeData.calledNumber === process.env.HOTLINE_NUMBER) {
+
                 const updateQueue = await db.queue.findOne({ where: { phoneNumber: process.env.HOTLINE_NUMBER } });
                 if (updateQueue) {
                     updateQueue.callsWaiting += 1;
@@ -50,6 +52,7 @@ class CallProcessingController {
 
             await db.call.create(writeData, { transaction: t });
             await t.commit();
+            event.emit('queueUpdate');
         } catch (e) {
             await t.rollback();
             throw e;
@@ -74,6 +77,7 @@ class CallProcessingController {
     
                     updateQueue.callsWaiting -= 1;
                     await updateQueue.save({ transaction: t });
+
                 }
 
                 let destination = await db.callDestination.findOne({ where: { accountNumber: data.destination.targets[0].account_number } });
@@ -89,6 +93,7 @@ class CallProcessingController {
                 await toUpdate.save({ transaction: t });
             }
             await t.commit();
+            event.emit('queueUpdate');
         } catch (e) {
             await t.rollback();
             console.error(e);
@@ -123,7 +128,9 @@ class CallProcessingController {
 
             updateQueue.callsWaiting -= 1;
             await updateQueue.save();
+
         }
+        event.emit('queueUpdate');
     }
 
 

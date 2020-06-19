@@ -7,19 +7,32 @@ class WebAccessRoutes {
 
         this.controller = new QueueInfoController();
         
-        this.router.get('/', this.getStatusPage.bind(this));
+        this.router.get('/queue-status', this.getStatus.bind(this));
+        this.router.get('/queue-status/event-stream', this.getEventStream.bind(this));
     }
 
-    getStatusPage(req, res, next) {
-
+    getStatus(req, res, next) {
         this.controller.getQueueStatus()
             .then((result) => {
-                res.render('index', { callsWaiting: result });
+                res.set('Access-Control-Allow-Origin', '*') // TODO: allow only frontend url 
+                res.status(200).send({ callsWaiting: result });
             });
     }
+
+    getEventStream(req, res, next) {
+        res.writeHead(200, {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+        });
+        res.write('\n');
+
+        this.getStatus(req, res, next);
+    }
+        
 }
 
 module.exports = {
-    url: '/',
+    url: '/api',
     router: new WebAccessRoutes().router
 }
