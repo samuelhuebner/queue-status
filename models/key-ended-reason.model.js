@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
     }, { tableName: 'keyEndedReason', timestamps: false });
 
     keyEndedReason.associate = (models) => {
-        models.keyEndedReason.hasMany(models.call, { foreignKey: 'keyEndedReasonId' });
+        models.keyEndedReason.hasMany(models.callEnding, { foreignKey: 'keyEndedReasonId' });
     }
 
     return keyEndedReason;

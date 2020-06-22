@@ -9,51 +9,23 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: false
         },
-        callInitiationTime: {
-            type: DataTypes.DATE,
+        wasSuccessful: {
+            type: DataTypes.TINYINT(1),
             allowNull: false,
-            defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
-        },
-        callPickupTime: {
-            type: DataTypes.DATE,
-            allowNull: true
-        },
-        callEndingTime: {
-            type: DataTypes.DATE,
-            allowNull: true
-        },
-        calledNumber: {
-            type: DataTypes.STRING(30),
-            allowNull: false
+            defaultValue: 0
         }
     }, {
         tableName: 'call',
-        timestamps: false,
-        getterMethods: {
-            
-            // gets "virutal" property fullname 
-            wasSuccessfull(){
-                var successful;
-
-                if (!this.keyEndedReasonId) {
-                    return null;
-                }
-
-                if (this.keyEndedReasonId === 1) {
-                    return true
-                }
-                return false;
-            }
-        }
-    
+        timestamps: false
     });
 
     call.associate = (models) => {
         models.call.belongsTo(models.caller, { foreignKey: { name: 'callerId', allowNull: false } });
-
-        models.call.belongsTo(models.callDestination, { foreignKey: { name: 'destinationId', allowNull: true } });
-
-        models.call.belongsTo(models.keyEndedReason, { foreignKey: { name: 'keyEndedReasonId', allowNull: true } });
+        models.call.belongsTo(models.callInitiation, { foreignKey: { name: 'callInitiationId', allowNull: true } });
+        models.call.belongsTo(models.callRinging, { foreignKey: { name: 'callRingingId', allowNull: true } });
+        models.call.belongsTo(models.callPickup, { foreignKey: { name: 'callPickupId', allowNull: true } });
+        models.call.belongsTo(models.callTransfer, { foreignKey: { name: 'callTransferId', allowNull: true } });
+        models.call.belongsTo(models.callEnding, { foreignKey: { name: 'callEndingId', allowNull: true } });
     }
 
     return call;
