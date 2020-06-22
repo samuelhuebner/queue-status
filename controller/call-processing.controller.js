@@ -1,11 +1,12 @@
 const _ = require('lodash');
 const db = require('../models');
 const event = require('../services/event.service');
+const hailQueue = require('../services/hail-hotline.service');
 
 const { NotFoundError, BadRequestError } = require('../errors');
+const hailHotlineService = require('../services/hail-hotline.service');
 
 class CallProcessingController {
-
     async determineCallStatus(data) {
         console.log(data);
 
@@ -32,32 +33,32 @@ class CallProcessingController {
         }
     }
 
-
     async registerNewCall(data) {
-        const writeData = {};
+        const callInitData = {};
+        const callData = {};
 
         const t = await db.sequelize.transaction();
 
         try {
-            writeData.callerId = await this.writeCaller(data, t);
-            writeData.callId = _.get(data, 'call_id');
-            writeData.callInitiationTime = _.get(data, 'timestamp');
-            writeData.calledNumber = _.get(data, 'destination.number');
+            callData.callerId = await this.writeCaller(data, t);
 
-            if (writeData.calledNumber === process.env.HOTLINE_NUMBER) {
+            const callId = _.get(data, 'call_id');
 
-                const updateQueue = await db.queue.findOne({ where: { phoneNumber: process.env.HOTLINE_NUMBER } });
-                if (updateQueue) {
-                    updateQueue.callsWaiting += 1;
-                    await updateQueue.save();
-                } else {
-                    await db.queue.create({ queueName: process.env.HOTLINE_NAME, phoneNumber: process.env.HOTLINE_NUMBER, callsWaiting: 1 }, { transaction: t });
-                }
+            callData.callId = callId;
+            callData.calledNumber = _.get(data, 'destination.number');
+            callInitData.callId = callId;
+            callInitData.callInitiationTime = _.get(data, 'timestamp');
+
+            if (callData.calledNumber === process.env.HOTLINE_NUMBER) {
+                hailQueue.addNewCall(callId);
+                event.emit('queueUpdate');
             }
 
-            await db.call.create(writeData, { transaction: t });
+            const callInitiation = await db.callInitiation.create(callInitData, { transaction: t });
+            callData.callInitiationId = callInitiation.id;
+
+            await db.call.create(callData, { transaction: t });
             await t.commit();
-            event.emit('queueUpdate');
         } catch (e) {
             await t.rollback();
             throw e;
@@ -66,39 +67,30 @@ class CallProcessingController {
 
     async updateCall(data) {
         const callId = _.get(data, 'call_id');
-
-        
         const t = await db.sequelize.transaction();
-        
-        const toUpdate = await db.call.findOne({ where: { callId } });
 
         try {
             if (data.status === 'ringing') {
+                const ringingData = {};
                 if (data.destination.number === process.env.HOTLINE_NUMBER) {
-                    const updateQueue = await db.queue.findOne({ where: { phoneNumber: process.env.HOTLINE_NUMBER } });
-                    if (!updateQueue || updateQueue.callsWaiting === 0) {
-                        return;
-                    }
-    
-                    updateQueue.callsWaiting -= 1;
-                    await updateQueue.save({ transaction: t });
-
+                    hailQueue.removeCall(callId);
+                    event.emit('queueUpdate');
                 }
-
+                
                 let destination = await db.callDestination.findOne({ where: { accountNumber: data.destination.targets[0].account_number } });
                 if (!destination) {
                     destination = await db.callDestination.create({ accountNumber: data.destination.targets[0].account_number });
                 }
 
-                toUpdate.destinationId = destination.id;
+                ringingData.callId = callId;
+                ringingData.destinationId = destination.id;
 
-                await toUpdate.save({ transaction: t });
-            } else {
-                toUpdate.callPickupTime = db.sequelize.literal('CURRENT_TIMESTAMP');
-                await toUpdate.save({ transaction: t });
+                await db.callRinging.create(ringingData, { transaction: t });
+            } else if (data.status === 'in-progress') {
+                const callPickupData = { callId }
+                await db.callPickup.create(callPickupData, { transaction: t });
             }
             await t.commit();
-            event.emit('queueUpdate');
         } catch (e) {
             await t.rollback();
             console.error(e);
@@ -107,35 +99,48 @@ class CallProcessingController {
 
     async endCall(data) {
         const callId = _.get(data, 'call_id');
-        const toUpdate = await db.call.findOne({ where: { callId } });
 
-        if (!toUpdate) {
-            throw new NotFoundError('call not found');
-        }
+        const callEndingData = { callId };
 
         const keyEndedReason = await db.keyEndedReason.findOne({ where: { reason: data.reason } });
-        toUpdate.keyEndedReasonId = keyEndedReason.id;
-        toUpdate.callEndingTime = db.sequelize.literal('CURRENT_TIMESTAMP');
+
+        callEndingData.keyEndedReasonId = keyEndedReason.id;
+        callEndingData.callEndingTime = db.sequelize.literal('CURRENT_TIMESTAMP');
 
         await db.sequelize.transaction(async (t) => {
             try {
-                await toUpdate.save({ transaction: t });
+                await db.callEnding.create(callEndingData, { transaction: t });
             } catch (e) {
                 throw e;
             }
         });
 
         if (_.get(data, 'destination.number') === process.env.HOTLINE_NUMBER) {
-            const updateQueue = await db.queue.findOne({ where: { phoneNumber: process.env.HOTLINE_NUMBER } });
-            if (!updateQueue || updateQueue.callsWaiting === 0) {
-                return;
-            }
-
-            updateQueue.callsWaiting -= 1;
-            await updateQueue.save();
-
+            hailHotlineService.removeCall(callId);
+            event.emit('queueUpdate');
         }
-        event.emit('queueUpdate');
+
+        return this.processCall(callId);
+    }
+
+    async processCall(callId) {
+        const [
+            call,
+            callRinging,
+            callPickup,
+            callEnding
+        ] = await Promise.all([
+            db.call.findOne({ where: { callId }}),
+            db.callRinging.findOne({ where: { callId }}),
+            db.callPickup.findOne({ where: { callId }}),
+            db.callEnding.findOne({ where: { callId }})
+        ]);
+
+        call.callRingingId = _.get(callRinging, 'id');
+        call.callPickupId = _.get(callPickup, 'id');
+        call.callEndingId = _.get(callEnding, 'id');
+
+        await call.save();
     }
 
 

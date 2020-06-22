@@ -13,10 +13,6 @@
             ],
             "program": "${workspaceFolder}/server.js",
             "env": {
-                "SVC_NAME": "queue-status",
-                "SVC_PORT": "8812",
-                "HOTLINE_NUMBER": "+4971716048602",
-                "HOTLINE_NAME": "dev-testing"
             }
         }
     ]

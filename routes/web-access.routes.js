@@ -12,11 +12,9 @@ class WebAccessRoutes {
     }
 
     getStatus(req, res, next) {
-        this.controller.getQueueStatus()
-            .then((result) => {
-                res.set('Access-Control-Allow-Origin', '*') // TODO: allow only frontend url 
-                res.status(200).send({ callsWaiting: result });
-            });
+        const status = this.controller.getQueueStatus()
+        res.set('Access-Control-Allow-Origin', '*') // TODO: allow only frontend url 
+        res.status(200).send({ callsWaiting: status });
     }
 
     getEventStream(req, res, next) {

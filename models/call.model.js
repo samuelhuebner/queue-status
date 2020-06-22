@@ -13,6 +13,10 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.TINYINT(1),
             allowNull: false,
             defaultValue: 0
+        },
+        calledNumber: {
+            type: DataTypes.STRING(30),
+            allowNull: false
         }
     }, {
         tableName: 'call',

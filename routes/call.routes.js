@@ -10,7 +10,7 @@ class CallRoutes {
     }
 
     async processCallHandler(req, res, next) {
-        await this.controller.determineCallStatus(req.body)
+        this.controller.determineCallStatus(req.body)
             .then((response) => res.send(response))
             .catch((e) => next(e));
     }
