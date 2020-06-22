@@ -16,7 +16,7 @@ class Server {
         this.app.listen(process.env.SVC_PORT, () => console.log(`${process.env.SVC_NAME} listening to port ${process.env.SVC_PORT}`));
 
         this.http = require('http').Server(this.app);
-        this.io = require('socket.io')(this.http);
+        this.io = require('socket.io')(this.http, { path: '/websocket/socket.io' });
 
         this.io.on('connection', socket => {
             console.log('client connected');
@@ -27,6 +27,7 @@ class Server {
         });
 
         event.on('queueUpdate', () => {
+            console.log('event emitted');
             this.io.sockets.emit('update');
         });
 
