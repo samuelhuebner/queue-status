@@ -19,6 +19,11 @@ class CallProcessingController {
         }
 
         if (callStatus === 'created') {
+            
+            if (process.env.DEBUG) {
+                console.log('registering new call');
+            }
+
             await this.registerNewCall(data);
         } else if (callStatus === 'ringing' || callStatus === 'in-progress') {
             await this.updateCall(data);
