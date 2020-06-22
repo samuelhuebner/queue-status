@@ -9,9 +9,9 @@ class Server {
     constructor(routes) {
         this.app = new Express();
         this.app.use(Express.json());
+        this.app.use(debug);
         this.app.use(auth);
         this.app.use(error);
-        this.app.use(debug);
         this.app.use(routes);
         this.app.listen(process.env.SVC_PORT, () => console.log(`${process.env.SVC_NAME} listening to port ${process.env.SVC_PORT}`));
 
