@@ -20,6 +20,7 @@ class WebAccessRoutes {
     }
 
     getEventStream(req, res, next) {
+        res.set('Access-Control-Allow-Origin', '*') // TODO: allow only frontend url 
         res.writeHead(200, {
             'Content-Type': 'text/event-stream',
             'Cache-Control': 'no-cache',
