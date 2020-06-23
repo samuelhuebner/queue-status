@@ -140,6 +140,11 @@ class CallProcessingController {
         call.callPickupId = _.get(callPickup, 'id');
         call.callEndingId = _.get(callEnding, 'id');
 
+        const keyEndedReasonId = _.get(callEnding, 'keyEndedReasonId'); 
+        if (keyEndedReasonId === 1) {
+            call.wasSuccessful = 1
+        }
+
         await call.save();
     }
 
