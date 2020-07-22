@@ -24,6 +24,7 @@
     "express": "^4.17.1",
     "http": "0.0.1-security",
     "lodash": "^4.17.15",
+    "moment": "^2.27.0",
     "mysql2": "^2.1.0",
     "sequelize": "^5.21.10",
     "socket.io": "^2.3.0"
