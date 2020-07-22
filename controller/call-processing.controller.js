@@ -16,6 +16,7 @@ class CallProcessingController {
 
         const callStatus = _.get(data, 'status');
         if (!callStatus) {
+            console.log(e);
             throw new BadRequestError('invalid request');
         }
 
@@ -60,6 +61,7 @@ class CallProcessingController {
             await db.call.create(callData, { transaction: t });
             await t.commit();
         } catch (e) {
+            console.log(e)
             await t.rollback();
             throw e;
         }
@@ -79,7 +81,7 @@ class CallProcessingController {
                 
                 let destination = await db.callDestination.findOne({ where: { accountNumber: data.destination.targets[0].account_number } });
                 if (!destination) {
-                    destination = await db.callDestination.create({ accountNumber: data.destination.targets[0].account_number });
+                    destination = await db.callDestination.create({ accountNumber: _.get(data, 'destination.targets[0].account_number') });
                 }
 
                 ringingData.callId = callId;
@@ -93,7 +95,7 @@ class CallProcessingController {
             await t.commit();
         } catch (e) {
             await t.rollback();
-            console.error(e);
+            console.log(e);
         }
     }
 
