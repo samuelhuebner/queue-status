@@ -1,7 +1,8 @@
+const _ = require('lodash');
+
 class HailHotline {
     constructor() {
         this.queue = [];
-
     }
 
     get length() {
@@ -18,21 +19,27 @@ class HailHotline {
             return {};
         }
 
-        if (this.queue.length === 1 && this.queue[0].callId === callId) {
+        if (this.queue.length === 1 && _.get('this.queue[0].callId') === callId) {
             const last = this.queue.pop();
             this.queue = [];
+            return last;
         }
 
         for (let i = 0; i < this.queue.length; i += 1) {
             const item = this.queue[i];
-            if (i === this.length-1 && item.callId === callId) {
+
+            if (!item) {
+                continue;
+            }
+
+            if (i === this.queue.length-1 && item.callId === callId) {
                 return this.queue.pop();
             }
 
             if (item.callId === callId) {
-                const last = this.queue[this.length];
+                const last = this.queue[this.queue.length-1];
 
-                this.queue[this.length] = item;
+                this.queue[this.queue.length-1] = item;
                 this.queue[i] = last;
                 return this.queue.pop();
             }

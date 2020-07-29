@@ -1,11 +1,16 @@
 {
   "name": "queue-status",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Serves call-queue status on single webpage",
   "main": "server.js",
   "scripts": {
     "start": "npx nodemon server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy-major": "npm version major -m \"Release v%s\"",
+    "deploy-minor": "npm version minor -m \"Release v%s\"",
+    "deploy-patch": "npm version patch -m \"Release v%s\"",
+    "version": "",
+    "postversion": "git push && git push --tags"
   },
   "repository": {
     "type": "git",
