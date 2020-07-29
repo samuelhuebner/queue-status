@@ -138,6 +138,14 @@ class CallProcessingController {
             db.callEnding.findOne({ where: { callId }})
         ]);
 
+        if (!call) {
+            await new Promise(resolve => setTimeout(() => {
+                resolve, 1000
+            }));
+            
+            console.log('call not yet existing, waiting for finished transaction');
+        }
+
         call.callRingingId = _.get(callRinging, 'id');
         call.callPickupId = _.get(callPickup, 'id');
         call.callEndingId = _.get(callEnding, 'id');
