@@ -17,9 +17,9 @@ class WebAccessRoutes {
     }
 
     getHotlineOneStatus(req, res, next) {
+        res.set('Access-Control-Allow-Origin', '*') // TODO: allow only frontend url 
         try {
             const status = this.queueInfoController.getHotlineOneQueueStatus()
-            res.set('Access-Control-Allow-Origin', '*') // TODO: allow only frontend url 
             res.status(200).send({ callsWaiting: status });
         } catch (error) {
             next(error);
@@ -27,9 +27,9 @@ class WebAccessRoutes {
     }
 
     getHotlineTwoStatus(req, res, next) {
+        res.set('Access-Control-Allow-Origin', '*') // TODO: allow only frontend url 
         try {
             const status = this.queueInfoController.getHotlineTwoQueueStatus()
-            res.set('Access-Control-Allow-Origin', '*') // TODO: allow only frontend url 
             res.status(200).send({ callsWaiting: status });
         } catch (error) {
             next(error);
