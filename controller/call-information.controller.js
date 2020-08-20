@@ -2,7 +2,6 @@ const db = require('../models');
 const { Op } = require('sequelize');
 
 class CallInformationController {
-
     getInboundCallNumber(startDate, endDate) {
         var date, firstDay, lastDay, y, m;
 

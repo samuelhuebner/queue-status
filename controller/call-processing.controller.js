@@ -2,6 +2,7 @@ const _ = require('lodash');
 const db = require('../models');
 const event = require('../services/event.service');
 const hailQueue = require('../services/hail-hotline.service');
+const mainQueue = require('../services/main-hotline.service');
 
 const { NotFoundError, BadRequestError } = require('../errors');
 const hailHotlineService = require('../services/hail-hotline.service');
@@ -50,9 +51,14 @@ class CallProcessingController {
             callInitData.callId = callId;
             callInitData.callInitiationTime = _.get(data, 'timestamp');
 
-            if (callData.calledNumber === process.env.HOTLINE_NUMBER) {
+            if (callData.calledNumber === process.env.HOTLINE2_NUMBER) {
                 hailQueue.addNewCall(callId);
-                event.emit('queueUpdate');
+                event.emit('hailQueueUpdate');
+            }
+
+            if (callData.calledNumber === process.env.HOTLINE1_NUMBER) {
+                mainQueue.addNewCall(callId);
+                event.emit('mainQueueUpdate');
             }
 
             const callInitiation = await db.callInitiation.create(callInitData, { transaction: t });
@@ -74,9 +80,15 @@ class CallProcessingController {
         try {
             if (data.status === 'ringing') {
                 const ringingData = {};
-                if (data.destination.number === process.env.HOTLINE_NUMBER) {
+
+                if (data.destination.number === process.env.HOTLINE2_NUMBER) {
                     hailQueue.removeCall(callId);
-                    event.emit('queueUpdate');
+                    event.emit('hailQueueUpdate');
+                }
+                
+                if (data.destination.number === process.env.HOTLINE2_NUMBER) {
+                    mainQueue.removeCall(callId);
+                    event.emit('mainQueueUpdate');
                 }
                 
                 let destination = await db.callDestination.findOne({ where: { accountNumber: data.destination.targets[0].account_number } });
@@ -117,9 +129,14 @@ class CallProcessingController {
             }
         });
 
-        if (_.get(data, 'destination.number') === process.env.HOTLINE_NUMBER) {
+        if (_.get(data, 'destination.number') === process.env.HOTLINE2_NUMBER) {
             hailHotlineService.removeCall(callId);
-            event.emit('queueUpdate');
+            event.emit('hailQueueUpdate');
+        }
+
+        if (_.get(data, 'destination.number') === process.env.HOTLINE1_NUMBER) {
+            mainQueue.removeCall(callId);
+            event.emit('mainQueueUpdate');
         }
 
         return this.processCall(callId);

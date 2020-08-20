@@ -9,16 +9,31 @@ class WebAccessRoutes {
         this.queueInfoController = new QueueInfoController();
         this.callInfoController = new CallInformationController();
         
-        this.router.get('/queue-status', this.getStatus.bind(this));
+        this.router.get('/queue-status/hotline1', this.getHotlineOneStatus.bind(this));
+        this.router.get('/queue-status/hotline2', this.getHotlineTwoStatus.bind(this));
         this.router.get('/queue-status/event-stream', this.getEventStream.bind(this));
         this.router.get('/call-stats/monthly-inbound', this.getMonthlyInboundCallCount.bind(this));
         this.router.get('/call-stats/daily-reachability', this.getDailyInboundReachability.bind(this));
     }
 
-    getStatus(req, res, next) {
-        const status = this.queueInfoController.getQueueStatus()
-        res.set('Access-Control-Allow-Origin', '*') // TODO: allow only frontend url 
-        res.status(200).send({ callsWaiting: status });
+    getHotlineOneStatus(req, res, next) {
+        try {
+            const status = this.queueInfoController.getHotlineOneQueueStatus()
+            res.set('Access-Control-Allow-Origin', '*') // TODO: allow only frontend url 
+            res.status(200).send({ callsWaiting: status });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    getHotlineTwoStatus(req, res, next) {
+        try {
+            const status = this.queueInfoController.getHotlineTwoQueueStatus()
+            res.set('Access-Control-Allow-Origin', '*') // TODO: allow only frontend url 
+            res.status(200).send({ callsWaiting: status });
+        } catch (error) {
+            next(error);
+        }
     }
 
     async getMonthlyInboundCallCount(req, res, next) {

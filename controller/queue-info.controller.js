@@ -1,8 +1,12 @@
 const db = require('../models');
 const hailHotlineService = require('../services/hail-hotline.service');
+const mainHotlineService = require('../services/main-hotline.service');
 
 class QueueInfoController {
-    getQueueStatus() {
+    getHotlineOneQueueStatus() {
+        return mainHotlineService.length;
+    }
+    getHotlineTwoQueueStatus() {
         return hailHotlineService.length;
     }
 }

@@ -26,9 +26,13 @@ class Server {
             socket.emit('update');
         });
 
-        event.on('queueUpdate', () => {
-            console.log('event emitted');
-            this.io.sockets.emit('update');
+        // events 
+        event.on('hailQueueUpdate', () => {
+            this.io.sockets.emit('updatehotline2');
+        });
+
+        event.on('mainQueueUpdate', () => {
+            this.io.sockets.emit('updatehotline1');
         });
 
         this.http.listen(process.env.WEBSOCKET_PORT);
