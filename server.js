@@ -28,6 +28,8 @@ class Server {
 
         // events 
         event.on('hailQueueUpdate', () => {
+            // TODO: Remove debugging output
+            console.log('hailQueueUpdate');
             this.io.sockets.emit('updatehotline2');
         });
 
