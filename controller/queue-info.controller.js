@@ -6,6 +6,7 @@ class QueueInfoController {
     getHotlineOneQueueStatus() {
         return mainHotlineService.length;
     }
+
     getHotlineTwoQueueStatus() {
         return hailHotlineService.length;
     }

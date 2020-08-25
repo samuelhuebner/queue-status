@@ -1,12 +1,17 @@
-const db = require('../models');
 const { Op } = require('sequelize');
+const db = require('../models');
 
 class CallInformationController {
     getInboundCallNumber(startDate, endDate) {
-        var date, firstDay, lastDay, y, m;
+        let date;
+        let firstDay;
+        let y;
+        let m;
 
         if (!startDate) {
-            date = new Date(), y = date.getFullYear(), m = date.getMonth();
+            date = new Date();
+            y = date.getFullYear();
+            m = date.getMonth();
             firstDay = new Date(y, m, 1);
         } else {
             date = startDate;
@@ -16,7 +21,7 @@ class CallInformationController {
             firstDay = new Date(y, m, date.getDate());
         }
 
-        lastDay = endDate || new Date(y, m + 1, 0);
+        const lastDay = endDate || new Date(y, m + 1, 0);
 
         return db.callInitiation.count({
             where: {

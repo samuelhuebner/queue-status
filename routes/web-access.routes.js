@@ -1,3 +1,5 @@
+/* eslint-disable max-len */
+/* eslint-disable no-unused-vars */
 const _ = require('lodash');
 const { Router } = require('express');
 const { QueueInfoController, CallInformationController } = require('../controller');
@@ -8,7 +10,7 @@ class WebAccessRoutes {
 
         this.queueInfoController = new QueueInfoController();
         this.callInfoController = new CallInformationController();
-        
+
         this.router.get('/queue-status/hotline1', this.getHotlineOneStatus.bind(this));
         this.router.get('/queue-status/hotline2', this.getHotlineTwoStatus.bind(this));
         this.router.get('/queue-status/event-stream', this.getEventStream.bind(this));
@@ -17,9 +19,9 @@ class WebAccessRoutes {
     }
 
     getHotlineOneStatus(req, res, next) {
-        res.set('Access-Control-Allow-Origin', '*') // TODO: allow only frontend url 
+        res.set('Access-Control-Allow-Origin', '*'); // TODO: allow only frontend url
         try {
-            const status = this.queueInfoController.getHotlineOneQueueStatus()
+            const status = this.queueInfoController.getHotlineOneQueueStatus();
             res.status(200).send({ callsWaiting: status });
         } catch (error) {
             next(error);
@@ -27,9 +29,9 @@ class WebAccessRoutes {
     }
 
     getHotlineTwoStatus(req, res, next) {
-        res.set('Access-Control-Allow-Origin', '*') // TODO: allow only frontend url 
+        res.set('Access-Control-Allow-Origin', '*'); // TODO: allow only frontend url
         try {
-            const status = this.queueInfoController.getHotlineTwoQueueStatus()
+            const status = this.queueInfoController.getHotlineTwoQueueStatus();
             res.status(200).send({ callsWaiting: status });
         } catch (error) {
             next(error);
@@ -38,7 +40,7 @@ class WebAccessRoutes {
 
     async getMonthlyInboundCallCount(req, res, next) {
         const count = await this.callInfoController.getInboundCallNumber();
-        res.set('Access-Control-Allow-Origin', '*') // TODO: allow only frontend url 
+        res.set('Access-Control-Allow-Origin', '*'); // TODO: allow only frontend url
         res.status(200).send({ count });
     }
 
@@ -55,20 +57,19 @@ class WebAccessRoutes {
     }
 
     getEventStream(req, res, next) {
-        res.set('Access-Control-Allow-Origin', '*') // TODO: allow only frontend url 
+        res.set('Access-Control-Allow-Origin', '*'); // TODO: allow only frontend url
         res.writeHead(200, {
             'Content-Type': 'text/event-stream',
             'Cache-Control': 'no-cache',
-            'Connection': 'keep-alive',
+            Connection: 'keep-alive'
         });
         res.write('\n');
 
         this.getStatus(req, res, next);
     }
-        
 }
 
 module.exports = {
     url: '/api',
     router: new WebAccessRoutes().router
-}
+};

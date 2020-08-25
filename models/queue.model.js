@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
         },
         phoneNumber: {
             type: DataTypes.STRING(30),
-            allowNull: false,
+            allowNull: false
         },
         callsWaiting: {
             type: DataTypes.SMALLINT,
@@ -21,4 +21,4 @@ module.exports = (sequelize, DataTypes) => {
     }, { tableName: 'queue', timestamps: false });
 
     return queue;
-}
+};

@@ -30,7 +30,7 @@ module.exports = (sequelize, DataTypes) => {
         models.call.belongsTo(models.callPickup, { foreignKey: { name: 'callPickupId', allowNull: true } });
         models.call.belongsTo(models.callTransfer, { foreignKey: { name: 'callTransferId', allowNull: true } });
         models.call.belongsTo(models.callEnding, { foreignKey: { name: 'callEndingId', allowNull: true } });
-    }
+    };
 
     return call;
-}
+};

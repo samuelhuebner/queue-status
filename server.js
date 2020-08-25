@@ -1,3 +1,6 @@
+/* eslint-disable global-require */
+/* eslint-disable max-len */
+/* eslint-disable no-console */
 require('dotenv').config();
 
 const Express = require('express');
@@ -18,15 +21,15 @@ class Server {
         this.http = require('http').Server(this.app);
         this.io = require('socket.io')(this.http, { path: '/websocket/socket.io' });
 
-        this.io.on('connection', socket => {
+        this.io.on('connection', (socket) => {
             console.log('client connected');
             socket.on('disconnect', () => {
                 console.log('client disconnected');
-            })
+            });
             socket.emit('update');
         });
 
-        // events 
+        // events
         event.on('hailQueueUpdate', () => {
             // TODO: Remove debugging output
             console.log('hailQueueUpdate');

@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
 
     caller.associate = (models) => {
         models.caller.hasMany(models.call, { foreignKey: 'callerId' });
-    }
+    };
 
     return caller;
-}
+};

@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
 
     keyEndedReason.associate = (models) => {
         models.keyEndedReason.hasMany(models.callEnding, { foreignKey: 'keyEndedReasonId' });
-    }
+    };
 
     return keyEndedReason;
-}
+};

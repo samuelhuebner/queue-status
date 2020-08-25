@@ -29,23 +29,24 @@ class MainHotline {
             const item = this.queue[i];
 
             if (!item) {
+                // eslint-disable-next-line no-continue
                 continue;
             }
 
-            if (i === this.queue.length-1 && item.callId === callId) {
+            if (i === this.queue.length - 1 && item.callId === callId) {
                 return this.queue.pop();
             }
 
             if (item.callId === callId) {
-                const last = this.queue[this.queue.length-1];
+                const last = this.queue[this.queue.length - 1];
 
-                this.queue[this.queue.length-1] = item;
+                this.queue[this.queue.length - 1] = item;
                 this.queue[i] = last;
                 return this.queue.pop();
             }
         }
+        return {};
     }
-
 }
 
 module.exports = new MainHotline();
