@@ -36,21 +36,32 @@ class CallInformationController {
         start.setHours(0, 0, 0, 0);
         end.setHours(23, 59, 59, 59);
 
-        var callInitCount;
-        
-        const timestring = `${start.getDate()}-${start.getMonth()}-${start.getFullYear()}`
-        callInitCount = await db.callInitiation.count({
+        const promises = [];
+
+        promises.push(db.callInitiation.count({
             where: {
                 callInitiationTime: {
                     [Op.between]: [start, end]
                 }
             }
-        })
+        }));
 
+        promises.push(db.callEnding.count({
+            where: {
+                keyEndedReasonId: 1
+            }
+        }));
 
-        return { calls: callInitCount };
+        const [
+            callInitCount,
+            successfulCalls
+        ] = await Promise.all(promises);
+
+        return {
+            callInitCount,
+            successfulCalls
+        };
     }
-
 }
 
 module.exports = CallInformationController;
