@@ -10,7 +10,8 @@
     "deploy-minor": "npm version minor -m \"Release v%s\"",
     "deploy-patch": "npm version patch -m \"Release v%s\"",
     "version": "",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push && git push --tags",
+    "lint": "./node_modules/.bin/eslint ./"
   },
   "repository": {
     "type": "git",
@@ -35,6 +36,7 @@
     "socket.io": "^2.3.0"
   },
   "devDependencies": {
+    "eslint-config-whit3shark": "git+ssh://git@github.com/machinegunflows/eslint-config-private.git",
     "sequelize-cli": "^6.2.0"
   }
 }
