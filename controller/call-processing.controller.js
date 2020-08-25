@@ -24,7 +24,8 @@ class CallProcessingController {
         if (callStatus === 'created') {
             
             if (process.env.DEBUG) {
-                console.log('registering new call');
+                console.log(`-----------------------------------------------------------------------------------------`);
+                console.log(`registering new inbound call with id ${_.get(data, 'call_id')}`);
             }
 
             await this.registerNewCall(data);
