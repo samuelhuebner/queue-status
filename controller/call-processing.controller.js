@@ -86,7 +86,7 @@ class CallProcessingController {
                     event.emit('hailQueueUpdate');
                 }
                 
-                if (data.destination.number === process.env.HOTLINE2_NUMBER) {
+                if (data.destination.number === process.env.HOTLINE1_NUMBER) {
                     mainQueue.removeCall(callId);
                     event.emit('mainQueueUpdate');
                 }
