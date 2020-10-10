@@ -19,20 +19,18 @@ class WebAccessRoutes {
     }
 
     getHotlineOneStatus(req, res, next) {
-        res.set('Access-Control-Allow-Origin', '*'); // TODO: allow only frontend url
         try {
             const status = this.queueInfoController.getHotlineOneQueueStatus();
-            res.status(200).send({ callsWaiting: status });
+            res.send({ callsWaiting: status });
         } catch (error) {
             next(error);
         }
     }
 
     getHotlineTwoStatus(req, res, next) {
-        res.set('Access-Control-Allow-Origin', '*'); // TODO: allow only frontend url
         try {
             const status = this.queueInfoController.getHotlineTwoQueueStatus();
-            res.status(200).send({ callsWaiting: status });
+            res.send({ callsWaiting: status });
         } catch (error) {
             next(error);
         }
