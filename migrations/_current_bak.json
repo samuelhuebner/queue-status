@@ -417,6 +417,11 @@
                     "field": "isValidated",
                     "seqType": "Sequelize.TINYINT(1)"
                 },
+                "validationToken": {
+                    "allowNull": true,
+                    "field": "validationToken",
+                    "seqType": "Sequelize.STRING"
+                },
                 "createdAt": {
                     "allowNull": false,
                     "field": "createdAt",
@@ -431,5 +436,5 @@
             "indexes": []
         }
     },
-    "revision": 2
+    "revision": 3
 }
