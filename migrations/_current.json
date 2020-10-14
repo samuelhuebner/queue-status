@@ -1,0 +1,427 @@
+{
+    "tables": {
+        "callDestination": {
+            "tableName": "callDestination",
+            "schema": {
+                "id": {
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "accountNumber": {
+                    "field": "accountNumber",
+                    "seqType": "Sequelize.SMALLINT(3).UNSIGNED"
+                },
+                "userName": {
+                    "field": "userName",
+                    "seqType": "Sequelize.STRING"
+                },
+                "number": {
+                    "field": "number",
+                    "seqType": "Sequelize.STRING(30)"
+                }
+            },
+            "indexes": []
+        },
+        "callEnding": {
+            "tableName": "callEnding",
+            "schema": {
+                "id": {
+                    "autoIncrement": true,
+                    "primaryKey": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "callId": {
+                    "allowNull": false,
+                    "field": "callId",
+                    "seqType": "Sequelize.STRING"
+                },
+                "callEndingTime": {
+                    "allowNull": false,
+                    "defaultValue": {
+                        "internal": true,
+                        "value": "Sequelize.Literal"
+                    },
+                    "field": "callEndingTime",
+                    "seqType": "Sequelize.DATE"
+                },
+                "keyEndedReasonId": {
+                    "allowNull": true,
+                    "name": "keyEndedReasonId",
+                    "references": {
+                        "model": "keyEndedReason",
+                        "key": "id"
+                    },
+                    "onDelete": "SET NULL",
+                    "onUpdate": "CASCADE",
+                    "field": "keyEndedReasonId",
+                    "seqType": "Sequelize.INTEGER"
+                }
+            },
+            "indexes": []
+        },
+        "callInitiation": {
+            "tableName": "callInitiation",
+            "schema": {
+                "id": {
+                    "autoIncrement": true,
+                    "primaryKey": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "callId": {
+                    "allowNull": false,
+                    "field": "callId",
+                    "seqType": "Sequelize.STRING"
+                },
+                "callInitiationTime": {
+                    "allowNull": false,
+                    "defaultValue": {
+                        "internal": true,
+                        "value": "Sequelize.Literal"
+                    },
+                    "field": "callInitiationTime",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
+        "callPickup": {
+            "tableName": "callPickup",
+            "schema": {
+                "id": {
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "callId": {
+                    "allowNull": false,
+                    "field": "callId",
+                    "seqType": "Sequelize.STRING"
+                },
+                "callPickupTime": {
+                    "allowNull": false,
+                    "defaultValue": {
+                        "internal": true,
+                        "value": "Sequelize.Literal"
+                    },
+                    "field": "callPickupTime",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
+        "callRinging": {
+            "tableName": "callRinging",
+            "schema": {
+                "id": {
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "callId": {
+                    "allowNull": false,
+                    "field": "callId",
+                    "seqType": "Sequelize.STRING"
+                },
+                "callRingingTime": {
+                    "allowNull": false,
+                    "defaultValue": {
+                        "internal": true,
+                        "value": "Sequelize.Literal"
+                    },
+                    "field": "callRingingTime",
+                    "seqType": "Sequelize.DATE"
+                },
+                "destinationId": {
+                    "allowNull": true,
+                    "name": "destinationId",
+                    "references": {
+                        "model": "callDestination",
+                        "key": "id"
+                    },
+                    "onDelete": "SET NULL",
+                    "onUpdate": "CASCADE",
+                    "field": "destinationId",
+                    "seqType": "Sequelize.INTEGER"
+                }
+            },
+            "indexes": []
+        },
+        "callTransfer": {
+            "tableName": "callTransfer",
+            "schema": {
+                "id": {
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "callId": {
+                    "allowNull": false,
+                    "field": "callId",
+                    "seqType": "Sequelize.STRING"
+                },
+                "callTransferTime": {
+                    "allowNull": false,
+                    "defaultValue": {
+                        "internal": true,
+                        "value": "Sequelize.Literal"
+                    },
+                    "field": "callTransferTime",
+                    "seqType": "Sequelize.DATE"
+                },
+                "destinationId": {
+                    "allowNull": true,
+                    "name": "destinationId",
+                    "references": {
+                        "model": "callDestination",
+                        "key": "id"
+                    },
+                    "onDelete": "SET NULL",
+                    "onUpdate": "CASCADE",
+                    "field": "destinationId",
+                    "seqType": "Sequelize.INTEGER"
+                }
+            },
+            "indexes": []
+        },
+        "call": {
+            "tableName": "call",
+            "schema": {
+                "id": {
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "callId": {
+                    "allowNull": false,
+                    "field": "callId",
+                    "seqType": "Sequelize.STRING"
+                },
+                "wasSuccessful": {
+                    "allowNull": false,
+                    "defaultValue": {
+                        "value": 0
+                    },
+                    "field": "wasSuccessful",
+                    "seqType": "Sequelize.TINYINT(1)"
+                },
+                "calledNumber": {
+                    "allowNull": false,
+                    "field": "calledNumber",
+                    "seqType": "Sequelize.STRING(30)"
+                },
+                "callEndingId": {
+                    "allowNull": true,
+                    "references": {
+                        "model": "callEnding",
+                        "key": "id"
+                    },
+                    "onDelete": "SET NULL",
+                    "onUpdate": "CASCADE",
+                    "field": "callEndingId",
+                    "name": "callEndingId",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "callInitiationId": {
+                    "allowNull": true,
+                    "references": {
+                        "model": "callInitiation",
+                        "key": "id"
+                    },
+                    "onDelete": "SET NULL",
+                    "onUpdate": "CASCADE",
+                    "field": "callInitiationId",
+                    "name": "callInitiationId",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "callPickupId": {
+                    "allowNull": true,
+                    "references": {
+                        "model": "callPickup",
+                        "key": "id"
+                    },
+                    "onDelete": "SET NULL",
+                    "onUpdate": "CASCADE",
+                    "field": "callPickupId",
+                    "name": "callPickupId",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "callRingingId": {
+                    "allowNull": true,
+                    "references": {
+                        "model": "callRinging",
+                        "key": "id"
+                    },
+                    "onDelete": "SET NULL",
+                    "onUpdate": "CASCADE",
+                    "field": "callRingingId",
+                    "name": "callRingingId",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "callTransferId": {
+                    "allowNull": true,
+                    "references": {
+                        "model": "callTransfer",
+                        "key": "id"
+                    },
+                    "onDelete": "SET NULL",
+                    "onUpdate": "CASCADE",
+                    "field": "callTransferId",
+                    "name": "callTransferId",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "callerId": {
+                    "allowNull": false,
+                    "name": "callerId",
+                    "references": {
+                        "model": "caller",
+                        "key": "id"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "CASCADE",
+                    "field": "callerId",
+                    "seqType": "Sequelize.INTEGER"
+                }
+            },
+            "indexes": []
+        },
+        "caller": {
+            "tableName": "caller",
+            "schema": {
+                "id": {
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "phoneNumber": {
+                    "allowNull": true,
+                    "field": "phoneNumber",
+                    "seqType": "Sequelize.STRING(30)"
+                },
+                "contact_id": {
+                    "allowNull": true,
+                    "field": "contact_id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "firstContactDate": {
+                    "allowNull": false,
+                    "defaultValue": {
+                        "internal": true,
+                        "value": "Sequelize.Literal"
+                    },
+                    "field": "firstContactDate",
+                    "seqType": "Sequelize.DATE"
+                },
+                "lastContactDate": {
+                    "allowNull": true,
+                    "field": "lastContactDate",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
+        "keyEndedReason": {
+            "tableName": "keyEndedReason",
+            "schema": {
+                "id": {
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "reason": {
+                    "allowNull": false,
+                    "field": "reason",
+                    "seqType": "Sequelize.STRING"
+                },
+                "successful": {
+                    "allowNull": false,
+                    "field": "successful",
+                    "seqType": "Sequelize.TINYINT(1)"
+                }
+            },
+            "indexes": []
+        },
+        "queue": {
+            "tableName": "queue",
+            "schema": {
+                "id": {
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "queueName": {
+                    "allowNull": true,
+                    "field": "queueName",
+                    "seqType": "Sequelize.STRING"
+                },
+                "phoneNumber": {
+                    "allowNull": false,
+                    "field": "phoneNumber",
+                    "seqType": "Sequelize.STRING(30)"
+                },
+                "callsWaiting": {
+                    "allowNull": false,
+                    "defaultValue": {
+                        "value": 0
+                    },
+                    "field": "callsWaiting",
+                    "seqType": "Sequelize.SMALLINT"
+                }
+            },
+            "indexes": []
+        },
+        "users": {
+            "tableName": "users",
+            "schema": {
+                "id": {
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "username": {
+                    "allowNull": false,
+                    "field": "username",
+                    "seqType": "Sequelize.STRING"
+                },
+                "password": {
+                    "allowNull": false,
+                    "field": "password",
+                    "seqType": "Sequelize.STRING"
+                },
+                "name": {
+                    "allowNull": true,
+                    "field": "name",
+                    "seqType": "Sequelize.STRING"
+                },
+                "email": {
+                    "allowNull": true,
+                    "field": "email",
+                    "seqType": "Sequelize.STRING"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        }
+    },
+    "revision": 1
+}

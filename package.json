@@ -10,7 +10,8 @@
     "deploy-minor": "npm version minor -m \"Release %s\"",
     "deploy-patch": "npm version patch -m \"Release %s\"",
     "version": "",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push && git push --tags",
+    "lint": "./node_modules/.bin/eslint ./"
   },
   "repository": {
     "type": "git",
@@ -23,11 +24,14 @@
   },
   "homepage": "https://github.com/machinegunflows/queue-status#readme",
   "dependencies": {
+    "argon2": "^0.27.0",
     "body-parser": "^1.19.0",
     "dotenv": "^8.2.0",
     "ejs": "^3.1.3",
     "express": "^4.17.1",
+    "express-jwt": "^6.0.0",
     "http": "0.0.1-security",
+    "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.19",
     "moment": "^2.27.0",
     "mysql2": "^2.1.0",
@@ -35,6 +39,8 @@
     "socket.io": "^2.3.0"
   },
   "devDependencies": {
+    "eslint-config-whit3shark": "git+ssh://git@github.com/machinegunflows/eslint-config-private.git",
+    "sequelize-auto-migrations": "git+ssh://git@bitbucket.org/axonetiq/sequelize-auto-migrations.git#latest",
     "sequelize-cli": "^6.2.0"
   }
 }

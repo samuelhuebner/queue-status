@@ -1,6 +1,6 @@
 const _ = require('lodash');
 
-class HailHotline {
+class MainHotline {
     constructor() {
         this.queue = [];
     }
@@ -10,7 +10,7 @@ class HailHotline {
     }
 
     addNewCall(callId) {
-        console.warn('new call in queue');
+        console.log('new call in main-queue');
         this.queue.push({ callId });
     }
 
@@ -45,9 +45,8 @@ class HailHotline {
                 return this.queue.pop();
             }
         }
-
         return {};
     }
 }
 
-module.exports = new HailHotline();
+module.exports = new MainHotline();

@@ -1,7 +1,9 @@
+/* eslint-disable max-len */
 const _ = require('lodash');
 const db = require('../models');
 const event = require('../services/event.service');
 const hailQueue = require('../services/hail-hotline.service');
+const mainQueue = require('../services/main-hotline.service');
 
 const { NotFoundError, BadRequestError } = require('../errors');
 const hailHotlineService = require('../services/hail-hotline.service');
@@ -16,14 +18,13 @@ class CallProcessingController {
 
         const callStatus = _.get(data, 'status');
         if (!callStatus) {
-            console.log(e);
             throw new BadRequestError('invalid request');
         }
 
         if (callStatus === 'created') {
-            
             if (process.env.DEBUG) {
-                console.log('registering new call');
+                console.log('-----------------------------------------------------------------------------------------');
+                console.log(`registering new inbound call with id ${_.get(data, 'call_id')}`);
             }
 
             await this.registerNewCall(data);
@@ -50,9 +51,14 @@ class CallProcessingController {
             callInitData.callId = callId;
             callInitData.callInitiationTime = _.get(data, 'timestamp');
 
-            if (callData.calledNumber === process.env.HOTLINE_NUMBER) {
+            if (callData.calledNumber === process.env.HOTLINE2_NUMBER) {
                 hailQueue.addNewCall(callId);
-                event.emit('queueUpdate');
+                event.emit('hailQueueUpdate');
+            }
+
+            if (callData.calledNumber === process.env.HOTLINE1_NUMBER) {
+                mainQueue.addNewCall(callId);
+                event.emit('mainQueueUpdate');
             }
 
             const callInitiation = await db.callInitiation.create(callInitData, { transaction: t });
@@ -61,7 +67,7 @@ class CallProcessingController {
             await db.call.create(callData, { transaction: t });
             await t.commit();
         } catch (e) {
-            console.log(e)
+            console.log(e);
             await t.rollback();
             throw e;
         }
@@ -74,11 +80,17 @@ class CallProcessingController {
         try {
             if (data.status === 'ringing') {
                 const ringingData = {};
-                if (data.destination.number === process.env.HOTLINE_NUMBER) {
+
+                if (data.destination.number === process.env.HOTLINE2_NUMBER) {
                     hailQueue.removeCall(callId);
-                    event.emit('queueUpdate');
+                    event.emit('hailQueueUpdate');
                 }
-                
+
+                if (data.destination.number === process.env.HOTLINE1_NUMBER) {
+                    mainQueue.removeCall(callId);
+                    event.emit('mainQueueUpdate');
+                }
+
                 let destination = await db.callDestination.findOne({ where: { accountNumber: data.destination.targets[0].account_number } });
                 if (!destination) {
                     destination = await db.callDestination.create({ accountNumber: _.get(data, 'destination.targets[0].account_number') });
@@ -89,7 +101,7 @@ class CallProcessingController {
 
                 await db.callRinging.create(ringingData, { transaction: t });
             } else if (data.status === 'in-progress') {
-                const callPickupData = { callId }
+                const callPickupData = { callId };
                 await db.callPickup.create(callPickupData, { transaction: t });
             }
             await t.commit();
@@ -117,9 +129,14 @@ class CallProcessingController {
             }
         });
 
-        if (_.get(data, 'destination.number') === process.env.HOTLINE_NUMBER) {
+        if (_.get(data, 'destination.number') === process.env.HOTLINE2_NUMBER) {
             hailHotlineService.removeCall(callId);
-            event.emit('queueUpdate');
+            event.emit('hailQueueUpdate');
+        }
+
+        if (_.get(data, 'destination.number') === process.env.HOTLINE1_NUMBER) {
+            mainQueue.removeCall(callId);
+            event.emit('mainQueueUpdate');
         }
 
         return this.processCall(callId);
@@ -132,17 +149,17 @@ class CallProcessingController {
             callPickup,
             callEnding
         ] = await Promise.all([
-            db.call.findOne({ where: { callId }}),
-            db.callRinging.findOne({ where: { callId }}),
-            db.callPickup.findOne({ where: { callId }}),
-            db.callEnding.findOne({ where: { callId }})
+            db.call.findOne({ where: { callId } }),
+            db.callRinging.findOne({ where: { callId } }),
+            db.callPickup.findOne({ where: { callId } }),
+            db.callEnding.findOne({ where: { callId } })
         ]);
 
         if (!call) {
-            await new Promise(resolve => setTimeout(() => {
-                resolve, 1000
+            await new Promise((resolve) => setTimeout(() => {
+                resolve, 1000;
             }));
-            
+
             console.log('call not yet existing, waiting for finished transaction');
         }
 
@@ -150,14 +167,13 @@ class CallProcessingController {
         call.callPickupId = _.get(callPickup, 'id');
         call.callEndingId = _.get(callEnding, 'id');
 
-        const keyEndedReasonId = _.get(callEnding, 'keyEndedReasonId'); 
+        const keyEndedReasonId = _.get(callEnding, 'keyEndedReasonId');
         if (keyEndedReasonId === 1) {
-            call.wasSuccessful = 1
+            call.wasSuccessful = 1;
         }
 
         await call.save();
     }
-
 
     async writeCaller(data, t) {
         const writeData = {};
@@ -170,10 +186,9 @@ class CallProcessingController {
             existingCaller.lastContactDate = db.sequelize.literal('CURRENT_TIMESTAMP');
             await existingCaller.save();
             return existingCaller.id;
-        } else {
-            const newCaller = await db.caller.create(writeData, { transaction: t });
-            return newCaller.id;
         }
+        const newCaller = await db.caller.create(writeData, { transaction: t });
+        return newCaller.id;
     }
 }
 
