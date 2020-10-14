@@ -20,6 +20,15 @@ module.exports = (sequelize, DataTypes) => {
         email: {
             type: DataTypes.STRING,
             allowNull: true
+        },
+        isValidated: {
+            type: DataTypes.TINYINT(1),
+            allowNull: false,
+            defaultValue: 0
+        },
+        validationToken: {
+            type: DataTypes.STRING,
+            allowNull: true
         }
     });
 
