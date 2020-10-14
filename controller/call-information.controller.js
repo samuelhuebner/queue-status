@@ -48,7 +48,10 @@ class CallInformationController {
 
         promises.push(db.callEnding.count({
             where: {
-                keyEndedReasonId: 1
+                [Op.and]: [
+                    { callEndingTime: { [Op.between]: [start, end] } },
+                    { keyEndedReasonId: 1 }
+                ]
             }
         }));
 
