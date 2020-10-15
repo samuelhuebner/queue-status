@@ -31,7 +31,7 @@ class AuthService {
 
         // eslint-disable-next-line no-restricted-syntax
         for (const allowedDomain of allowedDomains) {
-            if (domain === allowedDomain.domainName) {
+            if (domain[1] === allowedDomain.domainName) {
                 validDomain = true;
             }
         }
