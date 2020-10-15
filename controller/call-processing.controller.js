@@ -77,7 +77,6 @@ class CallProcessingController {
             infoObject.callInitiation = callInitiation.toJSON();
             infoObject.caller = caller.toJSON();
 
-            console.log(infoObject);
             ongoingCallService.addNewCall(infoObject);
 
             await t.commit();

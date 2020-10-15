@@ -12,8 +12,6 @@ class OngoingCallService {
     addNewCall(call) {
         this.ongoingCalls.unshift(call);
         event.emit('callInserted', call.callId);
-
-        console.log('callInserted event emitted: ' + call.callId);
     }
 
     updateExistingCall(call) {
