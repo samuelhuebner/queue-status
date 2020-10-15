@@ -217,6 +217,11 @@
                     "field": "calledNumber",
                     "seqType": "Sequelize.STRING(30)"
                 },
+                "callDirection": {
+                    "allowNull": true,
+                    "field": "callDirection",
+                    "seqType": "Sequelize.STRING"
+                },
                 "callEndingId": {
                     "allowNull": true,
                     "references": {
@@ -454,5 +459,5 @@
             "indexes": []
         }
     },
-    "revision": 5
+    "revision": 6
 }
