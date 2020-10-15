@@ -52,6 +52,7 @@ class CallProcessingController {
             callInitData.callId = callId;
 
             callData.calledNumber = _.get(data, 'destination.number');
+            callData.callDirection = _.get(data, 'direction');
 
             // sets callinitiationTime to the time specified in the request
             callInitData.callInitiationTime = _.get(data, 'timestamp');
