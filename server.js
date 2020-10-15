@@ -37,8 +37,6 @@ class Server {
 
         // events
         event.on('hailQueueUpdate', () => {
-            // TODO: Remove debugging output
-            console.log('hailQueueUpdate');
             this.io.sockets.emit('updatehotline2');
         });
 
@@ -48,6 +46,7 @@ class Server {
 
         event.on('callInserted', (callId) => {
             this.io.sockets.emit('callInserted', callId);
+            console.log('callInserted');
         });
 
         this.http.listen(process.env.WEBSOCKET_PORT);
