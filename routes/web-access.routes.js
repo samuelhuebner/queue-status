@@ -4,6 +4,8 @@ const _ = require('lodash');
 const { Router } = require('express');
 const { QueueInfoController, CallInformationController } = require('../controller');
 
+const ongoingCallService = require('../services/ongoing-call.service');
+
 class WebAccessRoutes {
     constructor() {
         this.router = new Router();
@@ -13,6 +15,8 @@ class WebAccessRoutes {
 
         this.router.get('/queue-status/hotline1', this.getHotlineOneStatus.bind(this));
         this.router.get('/queue-status/hotline2', this.getHotlineTwoStatus.bind(this));
+        this.router.get('/call-stats/current', this.getCurrentCalls.bind(this));
+        this.router.get('/call-stats/current/:id', this.getCurrentCalls.bind(this));
         // this.router.get('/queue-status/event-stream', this.getEventStream.bind(this)); TODO: Delete this stuff if everything works
         this.router.get('/call-stats/monthly-inbound', this.getMonthlyInboundCallCount.bind(this));
         this.router.get('/call-stats/daily-reachability', this.getDailyInboundReachability.bind(this));
@@ -52,6 +56,22 @@ class WebAccessRoutes {
             count = await this.callInfoController.getReachability();
         }
         res.status(200).send({ reachability: 100, numberOfCalls: count });
+    }
+
+    getCurrentCalls(req, res, next) {
+        try {
+            res.send(ongoingCallService.getOngoingCallsList());
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    getCall(req, res, next) {
+        try {
+            res.send(ongoingCallService.getCall(req.params.id));
+        } catch (error) {
+            next(error);
+        }
     }
 
     // getEventStream(req, res, next) {
