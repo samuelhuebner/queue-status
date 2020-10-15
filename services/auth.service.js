@@ -25,6 +25,19 @@ class AuthService {
             throw new BadRequestError('Invalid E-Mail Address');
         }
 
+        const allowedDomains = await models.keyAllowedDomain.findAll();
+
+        let validDomain = false;
+        allowedDomains.forEach((allowedDomain) => {
+            if (domain === allowedDomain.domainName) {
+                validDomain = true;
+            }
+        });
+
+        if (!validDomain) {
+            throw new BadRequestError('Not allowed domain');
+        }
+
         const userData = {
             username,
             password: hashedPassword,
