@@ -14,7 +14,9 @@ class Server {
         this.app = new Express();
         this.app.use(cors);
         this.app.use(bodyParser.json({ limit: '50mb' }));
-        this.app.use(debug);
+        if (Number.parseInt(process.env.DEBUG)) {
+            this.app.use(debug);
+        }
         this.app.use(jwtAuth);
         this.app.use(auth);
         this.app.use(routes);
@@ -28,10 +30,6 @@ class Server {
         this.io = require('socket.io')(this.http, { path: '/websocket/socket.io', transport: ['websocket'], origins: allowedOrigins });
 
         this.io.on('connection', (socket) => {
-            console.log('client connected');
-            socket.on('disconnect', () => {
-                console.log('client disconnected');
-            });
             socket.emit('update');
         });
 

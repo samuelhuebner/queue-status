@@ -21,7 +21,7 @@ class CallProcessingController {
         }
 
         if (callStatus === 'created') {
-            if (process.env.DEBUG) {
+            if (Number.parseInt(process.env.DEBUG)) {
                 console.log(data);
                 console.log('-----------------------------------------------------------------------------------------');
                 console.log(`registering new inbound call with id ${_.get(data, 'call_id')}`);
