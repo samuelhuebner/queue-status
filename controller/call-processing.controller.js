@@ -72,9 +72,10 @@ class CallProcessingController {
             const createdCall = await db.call.create(callData, { transaction: t });
 
             // creates an info object from the callData and
-            const infoObject = { ...createdCall };
-            infoObject.callInitiation = callInitiation;
-            infoObject.caller = caller;
+            const jsonCall = createdCall.toJSON();
+            const infoObject = { ...jsonCall };
+            infoObject.callInitiation = callInitiation.toJSON();
+            infoObject.caller = caller.toJSON();
 
             console.log(infoObject);
             ongoingCallService.addNewCall(infoObject);
