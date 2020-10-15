@@ -202,7 +202,7 @@ class CallProcessingController {
         if (existingCaller) {
             existingCaller.lastContactDate = db.sequelize.literal('CURRENT_TIMESTAMP');
             await existingCaller.save();
-            return existingCaller.id;
+            return existingCaller;
         }
         const newCaller = await db.caller.create(writeData, { transaction: t });
         return newCaller;
