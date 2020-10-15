@@ -30,6 +30,8 @@ module.exports = {
         database: process.env.DB_NAME,
         host: process.env.DB_HOST,
         dialect: process.env.DB_DIALECT,
-        operatorsAliases: 0
+        operatorsAliases: 0,
+        debug: process.env.DEBUG || 0,
+        logging: process.env.LOGGING || false
     }
 };
