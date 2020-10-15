@@ -29,6 +29,7 @@ class AuthService {
 
         let validDomain = false;
         allowedDomains.forEach((allowedDomain) => {
+            console.log(allowedDomain.domainName);
             if (domain === allowedDomain.domainName) {
                 validDomain = true;
             }
