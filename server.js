@@ -4,6 +4,7 @@
 require('dotenv').config();
 
 const Express = require('express');
+const bodyParser = require('body-parser');
 const { error, debug, auth, jwtAuth, cors } = require('./middleware');
 
 const event = require('./services/event.service');
@@ -11,13 +12,13 @@ const event = require('./services/event.service');
 class Server {
     constructor(routes) {
         this.app = new Express();
-        this.app.use(Express.json());
+        this.app.use(cors);
+        this.app.use(bodyParser.json({ limit: '50mb' }));
         this.app.use(debug);
         this.app.use(jwtAuth);
         this.app.use(auth);
-        this.app.use(error);
-        this.app.use(cors);
         this.app.use(routes);
+        this.app.use(error);
         this.app.listen(process.env.SVC_PORT, () => console.log(`${process.env.SVC_NAME} listening to port ${process.env.SVC_PORT}`));
 
         this.http = require('http').Server(this.app);
