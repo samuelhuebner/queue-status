@@ -4,8 +4,9 @@ const db = require('../models');
 const event = require('../services/event.service');
 const hailQueue = require('../services/hail-hotline.service');
 const mainQueue = require('../services/main-hotline.service');
+const ongoingCallService = require('../services/ongoing-call.service');
 
-const { NotFoundError, BadRequestError } = require('../errors');
+const { BadRequestError } = require('../errors');
 const hailHotlineService = require('../services/hail-hotline.service');
 
 class CallProcessingController {
@@ -42,29 +43,41 @@ class CallProcessingController {
         const t = await db.sequelize.transaction();
 
         try {
-            callData.callerId = await this.writeCaller(data, t);
+            // writes caller entity of call
+            const caller = await this.writeCaller(data, t);
+            callData.callerId = caller.id;
 
+            // gets callId from call-request
             const callId = _.get(data, 'call_id');
-
             callData.callId = callId;
-            callData.calledNumber = _.get(data, 'destination.number');
             callInitData.callId = callId;
+
+            callData.calledNumber = _.get(data, 'destination.number');
+
+            // sets callinitiationTime to the time specified in the request
             callInitData.callInitiationTime = _.get(data, 'timestamp');
 
+            // if call-dest. is part of an hotline the according hotline needs to be updated
             if (callData.calledNumber === process.env.HOTLINE2_NUMBER) {
                 hailQueue.addNewCall(callId);
                 event.emit('hailQueueUpdate');
-            }
-
-            if (callData.calledNumber === process.env.HOTLINE1_NUMBER) {
+            } else if (callData.calledNumber === process.env.HOTLINE1_NUMBER) {
                 mainQueue.addNewCall(callId);
                 event.emit('mainQueueUpdate');
             }
 
+            // creates corresponding callInitiation object in the database
             const callInitiation = await db.callInitiation.create(callInitData, { transaction: t });
             callData.callInitiationId = callInitiation.id;
 
-            await db.call.create(callData, { transaction: t });
+            const createdCall = await db.call.create(callData, { transaction: t });
+
+            // creates an info object from the callData and
+            const infoObject = { ...createdCall };
+            infoObject.callInitiation = callInitiation;
+            infoObject.caller = caller;
+            ongoingCallService.addNewCall({ call: infoObject });
+
             await t.commit();
         } catch (e) {
             console.log(e);
@@ -175,6 +188,11 @@ class CallProcessingController {
         await call.save();
     }
 
+    /**
+     * Writes Caller Object to database
+     * @param {Object} data
+     * @param {Object} t
+     */
     async writeCaller(data, t) {
         const writeData = {};
 
@@ -188,7 +206,7 @@ class CallProcessingController {
             return existingCaller.id;
         }
         const newCaller = await db.caller.create(writeData, { transaction: t });
-        return newCaller.id;
+        return newCaller;
     }
 }
 
