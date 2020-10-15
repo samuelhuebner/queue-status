@@ -6,7 +6,7 @@ const verifyService = require('../services/verify.service');
 class VerificationRoutes {
     constructor() {
         this.router = new Router();
-        this.router.post('/user', this.verifyUser.bind(this));
+        this.router.get('/user', this.verifyUser.bind(this));
     }
 
     async verifyUser(req, res, next) {
