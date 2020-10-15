@@ -75,7 +75,7 @@ class CallProcessingController {
             const infoObject = { ...createdCall };
             infoObject.callInitiation = callInitiation;
             infoObject.caller = caller;
-            ongoingCallService.addNewCall({ call: infoObject });
+            ongoingCallService.addNewCall(infoObject);
 
             await t.commit();
         } catch (e) {
