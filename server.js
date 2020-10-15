@@ -44,7 +44,7 @@ class Server {
 
         event.on('callInserted', (callId) => {
             this.io.sockets.emit('callInserted', callId);
-            console.log('callInserted');
+            console.log('callInserted: ' + callId);
         });
 
         this.http.listen(process.env.WEBSOCKET_PORT);
