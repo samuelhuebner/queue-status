@@ -22,7 +22,7 @@ class Server {
 
         this.http = require('http').Server(this.app);
 
-        const allowedOrigins = `${process.env.FRONTEND_URL}:*`;
+        const allowedOrigins = `https://${process.env.FRONTEND_URL}:*`;
 
         this.io = require('socket.io')(this.http, { path: '/websocket/socket.io', transport: ['websocket'], origins: allowedOrigins });
 
