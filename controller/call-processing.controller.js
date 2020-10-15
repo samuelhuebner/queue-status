@@ -11,8 +11,6 @@ const hailHotlineService = require('../services/hail-hotline.service');
 
 class CallProcessingController {
     async determineCallStatus(data) {
-        console.log(data);
-
         if (_.get(data, 'direction') === 'outbound') {
             return;
         }
@@ -24,6 +22,7 @@ class CallProcessingController {
 
         if (callStatus === 'created') {
             if (process.env.DEBUG) {
+                console.log(data);
                 console.log('-----------------------------------------------------------------------------------------');
                 console.log(`registering new inbound call with id ${_.get(data, 'call_id')}`);
             }
