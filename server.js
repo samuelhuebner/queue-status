@@ -46,6 +46,10 @@ class Server {
             this.io.sockets.emit('updatehotline1');
         });
 
+        event.on('callInserted', (callId) => {
+            this.io.sockets.emit('callInserted', callId);
+        });
+
         this.http.listen(process.env.WEBSOCKET_PORT);
     }
 }

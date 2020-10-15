@@ -11,6 +11,7 @@ class OngoingCallService {
 
     addNewCall(call) {
         this.ongoingCalls.unshift(call);
+        event.emit('callInserted', call.callId);
     }
 
     updateExistingCall(call) {
@@ -21,7 +22,7 @@ class OngoingCallService {
 
             this.ongoingCalls[index] = { ...item, call };
 
-            event.emit('newCallInProgress', call.callId);
+            event.emit('callUpdated', call.callId);
         });
     }
 
