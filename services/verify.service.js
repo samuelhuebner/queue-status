@@ -11,6 +11,10 @@ class VerifyService {
             throw new NotFoundError();
         }
 
+        if (user.isValidated) {
+            return '<p>Already verified! <a href="https://pdr-call-stats.web.app/login">Login here</a></p>';
+        }
+
         if (user.validationToken !== token) {
             throw new BadRequestError();
         }
