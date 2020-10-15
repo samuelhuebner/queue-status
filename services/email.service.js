@@ -23,11 +23,11 @@ class EmailService {
         });
 
         await transporter.sendMail({
-            from: process.env.EMAIL_SENDADDRESS,
+            from: `"Call-Statistics" <${process.env.EMAIL_SENDADDRESS}>`,
             to: recipient,
             subject,
             text: rawContent,
-            html: htmlContent
+            html: `<div>${rawContent}</div>`
         });
     }
 }
