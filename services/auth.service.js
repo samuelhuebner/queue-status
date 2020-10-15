@@ -28,12 +28,13 @@ class AuthService {
         const allowedDomains = await models.keyAllowedDomain.findAll();
 
         let validDomain = false;
-        allowedDomains.forEach((allowedDomain) => {
-            console.log(allowedDomain.domainName);
+
+        // eslint-disable-next-line no-restricted-syntax
+        for (const allowedDomain of allowedDomains) {
             if (domain === allowedDomain.domainName) {
                 validDomain = true;
             }
-        });
+        }
 
         if (!validDomain) {
             throw new BadRequestError('Not allowed domain');
