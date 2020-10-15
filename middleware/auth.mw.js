@@ -1,7 +1,9 @@
 const _ = require('lodash');
 
 module.exports = (req, res, next) => {
-    if (req.originalUrl === '/auth/signup' || req.originalUrl === '/auth/login') {
+    if (req.originalUrl === '/auth/signup'
+            || req.originalUrl === '/auth/login'
+            || _.includes(req.originalUrl, '/verify/user')) {
         next();
         return;
     }

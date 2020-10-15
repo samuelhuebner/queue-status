@@ -3,12 +3,9 @@ const _ = require('lodash');
 
 const authService = require('../services/auth.service');
 
-const { CallProcessingController } = require('../controller');
-
 class CallRoutes {
     constructor() {
         this.router = new Router();
-        this.controller = new CallProcessingController();
         this.router.post('/login', this.authenticateUser.bind(this));
         this.router.post('/signup', this.createUser.bind(this));
     }

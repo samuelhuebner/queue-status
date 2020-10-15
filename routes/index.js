@@ -5,9 +5,11 @@ const router = new Router();
 const webAccessRoutes = require('./web-access.routes');
 const callRoutes = require('./call.routes');
 const authRoutes = require('./auth.routes');
+const verificationRoutes = require('./verification.routes');
 
 router.use(webAccessRoutes.url, webAccessRoutes.router);
 router.use(callRoutes.url, callRoutes.router);
 router.use(authRoutes.url, authRoutes.router);
+router.use(verificationRoutes.url, verificationRoutes.router);
 
 module.exports = router;

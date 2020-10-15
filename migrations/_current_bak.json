@@ -328,6 +328,23 @@
             },
             "indexes": []
         },
+        "keyAllowedDomain": {
+            "tableName": "keyAllowedDomain",
+            "schema": {
+                "id": {
+                    "autoIncrement": true,
+                    "primaryKey": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "domainName": {
+                    "allowNull": false,
+                    "field": "domainName",
+                    "seqType": "Sequelize.STRING"
+                }
+            },
+            "indexes": []
+        },
         "keyEndedReason": {
             "tableName": "keyEndedReason",
             "schema": {
@@ -436,5 +453,5 @@
             "indexes": []
         }
     },
-    "revision": 3
+    "revision": 4
 }
