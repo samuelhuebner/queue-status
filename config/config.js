@@ -7,11 +7,11 @@ module.exports = {
         database: process.env.DB_NAME,
         host: process.env.DB_HOST,
         dialect: process.env.DB_DIALECT,
-        operatorsAliases: 0,
-        dialectOptions: {
-            useUTC: false // for reading from database
-        },
-        timezone: 'Europe/Berlin'
+        operatorsAliases: 0
+        // dialectOptions: {
+        //     useUTC: false // for reading from database
+        // },
+        // timezone: 'Europe/Berlin'
     // "logging": process.env.LOGGING
     },
     test: {
