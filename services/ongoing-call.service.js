@@ -20,7 +20,7 @@ class OngoingCallService {
                 return;
             }
 
-            this.ongoingCalls[index] = { ...item, call };
+            this.ongoingCalls[index] = { ...item, ...call };
 
             event.emit('callUpdated', call.callId);
         });

@@ -47,6 +47,13 @@ class Server {
             this.io.sockets.emit('callInserted', callId);
         });
 
+        event.on('callUpdated', (callId) => {
+            this.io.sockets.emit('callUpdated', callId);
+        });
+        event.on('callFinished', (callId) => {
+            this.io.sockets.emit('callFinished', callId);
+        });
+
         this.http.listen(process.env.WEBSOCKET_PORT);
     }
 }
