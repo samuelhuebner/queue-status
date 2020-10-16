@@ -107,7 +107,7 @@ class CallProcessingController {
                     event.emit('mainQueueUpdate');
                 }
 
-                let destination = await db.callDestination.findOne({ where: { accountNumber: data.destination.targets[0].account_number } });
+                let destination = await db.callDestination.findOne({ where: { accountNumber: _.get(data, 'destination.targets[0].account_number') } });
                 if (!destination) {
                     destination = await db.callDestination.create({ accountNumber: _.get(data, 'destination.targets[0].account_number') });
                 }
