@@ -77,6 +77,7 @@ class CallProcessingController {
             const infoObject = { ...jsonCall };
             infoObject.callInitiation = callInitiation.toJSON();
             infoObject.caller = caller.toJSON();
+            infoObject.callStatus = 'initialized';
 
             ongoingCallService.addNewCall(infoObject);
 
@@ -114,10 +115,24 @@ class CallProcessingController {
                 ringingData.callId = callId;
                 ringingData.destinationId = destination.id;
 
-                await db.callRinging.create(ringingData, { transaction: t });
+                const newRingObject = await db.callRinging.create(ringingData, { transaction: t });
+
+                const callData = {
+                    callId,
+                    status: 'ringing'
+                };
+                callData.callRinging = newRingObject.toJSON();
+                ongoingCallService.updateExistingCall(callData);
             } else if (data.status === 'in-progress') {
                 const callPickupData = { callId };
-                await db.callPickup.create(callPickupData, { transaction: t });
+                const pickupObject = await db.callPickup.create(callPickupData, { transaction: t });
+
+                const callData = {
+                    callId,
+                    status: 'in-progress'
+                };
+                callData.callPickup = pickupObject.toJSON();
+                ongoingCallService.updateExistingCall(callData);
             }
             await t.commit();
         } catch (e) {
@@ -137,11 +152,7 @@ class CallProcessingController {
         callEndingData.callEndingTime = db.sequelize.literal('CURRENT_TIMESTAMP');
 
         await db.sequelize.transaction(async (t) => {
-            try {
-                await db.callEnding.create(callEndingData, { transaction: t });
-            } catch (e) {
-                throw e;
-            }
+            await db.callEnding.create(callEndingData, { transaction: t });
         });
 
         if (_.get(data, 'destination.number') === process.env.HOTLINE2_NUMBER) {
@@ -154,6 +165,7 @@ class CallProcessingController {
             event.emit('mainQueueUpdate');
         }
 
+        ongoingCallService.removeOngoingCall({ callId });
         return this.processCall(callId);
     }
 
@@ -172,6 +184,7 @@ class CallProcessingController {
 
         if (!call) {
             await new Promise((resolve) => setTimeout(() => {
+                // eslint-disable-next-line no-unused-expressions
                 resolve, 1000;
             }));
 
