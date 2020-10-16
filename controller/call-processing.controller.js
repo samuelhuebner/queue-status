@@ -76,6 +76,7 @@ class CallProcessingController {
             const jsonCall = createdCall.toJSON();
             const infoObject = { ...jsonCall };
             infoObject.callInitiation = callInitiation.toJSON();
+            infoObject.callInitiation.callInitiationTime = _.get(data, 'timestamp');
             infoObject.caller = caller.toJSON();
             infoObject.callStatus = 'initialized';
 
@@ -133,6 +134,7 @@ class CallProcessingController {
                     callStatus: 'in-progress'
                 };
                 callData.callPickup = pickupObject.toJSON();
+                callData.callPickup.callPickupTime = _.get(data, 'timestamp');
                 ongoingCallService.processCall(callData);
             }
             await t.commit();
