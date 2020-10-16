@@ -21,6 +21,12 @@ class OngoingCallService {
                 return;
             }
 
+            if (item.isDeleted) {
+                successful = true;
+                this.ongoingCalls.splice(index, 1);
+                return;
+            }
+
             if (call.callStatus === 'initialized') {
                 call.callStatus = item.callStatus;
             }
@@ -36,6 +42,7 @@ class OngoingCallService {
     }
 
     removeOngoingCall(call) {
+        let successful = false;
         this.ongoingCalls.forEach((item, index) => {
             if (item.callId !== call.callId) {
                 return;
@@ -44,8 +51,15 @@ class OngoingCallService {
             const [deleted] = this.ongoingCalls.splice(index, 1);
             if (deleted) {
                 event.emit('callFinished', deleted.callId);
+                successful = true;
             }
         });
+
+        if (successful) {
+            return;
+        }
+
+        this.addNewCall({ callId: call.callId, isDeleted: 1 });
     }
 
     getCall(callId) {
