@@ -11,6 +11,10 @@ const hailHotlineService = require('../services/hail-hotline.service');
 
 class CallProcessingController {
     async determineCallStatus(data) {
+        if (_.get(data, 'direction') === 'outbound') {
+            return;
+        }
+
         const callStatus = _.get(data, 'status');
         if (!callStatus) {
             throw new BadRequestError('invalid request');
@@ -20,7 +24,7 @@ class CallProcessingController {
             if (Number.parseInt(process.env.DEBUG)) {
                 console.log(data);
                 console.log('-----------------------------------------------------------------------------------------');
-                console.log(`registering new call with id ${_.get(data, 'call_id')}`);
+                console.log(`registering new inbound call with id ${_.get(data, 'call_id')}`);
             }
 
             await this.registerNewCall(data);
