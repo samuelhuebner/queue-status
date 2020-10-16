@@ -6,7 +6,7 @@ class OngoingCallService {
     }
 
     getOngoingCallsList() {
-        return this.ongoingCalls;
+        return this.ongoingCalls.filter((item) => !item.isDeleted);
     }
 
     addNewCall(call) {
@@ -59,7 +59,7 @@ class OngoingCallService {
             return;
         }
 
-        this.addNewCall({ callId: call.callId, isDeleted: 1 });
+        this.ongoingCalls.unshift({ callId: call.callId, isDeleted: 1 });
     }
 
     getCall(callId) {
