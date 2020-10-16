@@ -79,7 +79,7 @@ class CallProcessingController {
             infoObject.caller = caller.toJSON();
             infoObject.callStatus = 'initialized';
 
-            ongoingCallService.addNewCall(infoObject);
+            ongoingCallService.processCall(infoObject);
 
             await t.commit();
         } catch (e) {
@@ -123,7 +123,7 @@ class CallProcessingController {
                     destination: destination.toJSON()
                 };
                 callData.callRinging = newRingObject.toJSON();
-                ongoingCallService.updateExistingCall(callData);
+                ongoingCallService.processCall(callData);
             } else if (data.status === 'in-progress') {
                 const callPickupData = { callId };
                 const pickupObject = await db.callPickup.create(callPickupData, { transaction: t });
@@ -133,7 +133,7 @@ class CallProcessingController {
                     callStatus: 'in-progress'
                 };
                 callData.callPickup = pickupObject.toJSON();
-                ongoingCallService.updateExistingCall(callData);
+                ongoingCallService.processCall(callData);
             }
             await t.commit();
         } catch (e) {

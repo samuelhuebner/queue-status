@@ -17,7 +17,6 @@ class WebAccessRoutes {
         this.router.get('/queue-status/hotline2', this.getHotlineTwoStatus.bind(this));
         this.router.get('/call-stats/current', this.getCurrentCalls.bind(this));
         this.router.get('/call-stats/current/:id', this.getCall.bind(this));
-        // this.router.get('/queue-status/event-stream', this.getEventStream.bind(this)); TODO: Delete this stuff if everything works
         this.router.get('/call-stats/monthly-inbound', this.getMonthlyInboundCallCount.bind(this));
         this.router.get('/call-stats/daily-reachability', this.getDailyInboundReachability.bind(this));
     }
@@ -73,18 +72,6 @@ class WebAccessRoutes {
             next(error);
         }
     }
-
-    // getEventStream(req, res, next) {
-    //     res.set('Access-Control-Allow-Origin', '*'); // TODO: allow only frontend url
-    //     res.writeHead(200, {
-    //         'Content-Type': 'text/event-stream',
-    //         'Cache-Control': 'no-cache',
-    //         Connection: 'keep-alive'
-    //     });
-    //     res.write('\n');
-
-    //     this.getStatus(req, res, next);
-    // }
 }
 
 module.exports = {

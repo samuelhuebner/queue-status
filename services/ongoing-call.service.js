@@ -14,16 +14,25 @@ class OngoingCallService {
         event.emit('callInserted', call.callId);
     }
 
-    updateExistingCall(call) {
+    processCall(call) {
+        let successful = false;
         this.ongoingCalls.forEach((item, index) => {
             if (item.callId !== call.callId) {
                 return;
             }
 
-            this.ongoingCalls[index] = { ...item, ...call };
+            if (call.callStatus === 'initialized') {
+                call.callStatus = item.callStatus;
+            }
 
+            this.ongoingCalls[index] = { ...item, ...call };
+            successful = true;
             event.emit('callUpdated', call.callId);
         });
+
+        if (!successful) {
+            this.addNewCall(call);
+        }
     }
 
     removeOngoingCall(call) {
