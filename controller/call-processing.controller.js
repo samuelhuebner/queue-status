@@ -119,7 +119,8 @@ class CallProcessingController {
 
                 const callData = {
                     callId,
-                    callStatus: 'ringing'
+                    callStatus: 'ringing',
+                    destination: destination.toJSON()
                 };
                 callData.callRinging = newRingObject.toJSON();
                 ongoingCallService.updateExistingCall(callData);
