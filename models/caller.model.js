@@ -21,6 +21,11 @@ module.exports = (sequelize, DataTypes) => {
         lastContactDate: {
             type: DataTypes.DATE,
             allowNull: true
+        },
+        isExternal: {
+            type: DataTypes.TINYINT(1),
+            allowNull: false,
+            defaultValue: 1
         }
     }, { tableName: 'caller', timestamps: false });
 
