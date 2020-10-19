@@ -259,7 +259,7 @@ class CallProcessingController {
         }
     }
 
-    async endCall(data) {
+    async endCall(data, isOutbound) {
         const callId = _.get(data, 'call_id');
 
         const callEndingData = { callId };
@@ -267,21 +267,23 @@ class CallProcessingController {
         const keyEndedReason = await db.keyEndedReason.findOne({ where: { reason: data.reason } });
 
         callEndingData.keyEndedReasonId = keyEndedReason.id;
-        callEndingData.callEndingTime = db.sequelize.literal('CURRENT_TIMESTAMP');
+        callEndingData.callEndingTime = _.get(data, 'timestamp');
+
+        if (!isOutbound) {
+            if (_.get(data, 'destination.number') === process.env.HOTLINE2_NUMBER) {
+                hailHotlineService.removeCall(callId);
+                event.emit('hailQueueUpdate');
+            }
+
+            if (_.get(data, 'destination.number') === process.env.HOTLINE1_NUMBER) {
+                mainQueue.removeCall(callId);
+                event.emit('mainQueueUpdate');
+            }
+        }
 
         await db.sequelize.transaction(async (t) => {
             await db.callEnding.create(callEndingData, { transaction: t });
         });
-
-        if (_.get(data, 'destination.number') === process.env.HOTLINE2_NUMBER) {
-            hailHotlineService.removeCall(callId);
-            event.emit('hailQueueUpdate');
-        }
-
-        if (_.get(data, 'destination.number') === process.env.HOTLINE1_NUMBER) {
-            mainQueue.removeCall(callId);
-            event.emit('mainQueueUpdate');
-        }
 
         ongoingCallService.removeOngoingCall({ callId });
         return this.processCall(callId);
