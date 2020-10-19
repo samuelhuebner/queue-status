@@ -13,12 +13,21 @@ module.exports = (sequelize, DataTypes) => {
         },
         number: {
             type: DataTypes.STRING(30)
+        },
+        isExternal: {
+            type: DataTypes.TINYINT(1),
+            defaultValue: 0,
+            allowNull: false
         }
     }, { tableName: 'callDestination', timestamps: false });
 
     callDestination.associate = (models) => {
-        models.callDestination.hasMany(models.callRinging, { foreignKey: { name: 'destinationId' } });
-        models.callDestination.hasMany(models.callTransfer, { foreignKey: { name: 'destinationId' } });
+        models
+            .callDestination
+            .hasMany(models.callRinging, { foreignKey: { name: 'destinationId' } });
+        models
+            .callDestination
+            .hasMany(models.callTransfer, { foreignKey: { name: 'destinationId' } });
     };
 
     return callDestination;

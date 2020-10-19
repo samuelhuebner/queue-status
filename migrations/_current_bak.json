@@ -329,6 +329,14 @@
                     "allowNull": true,
                     "field": "lastContactDate",
                     "seqType": "Sequelize.DATE"
+                },
+                "isExternal": {
+                    "allowNull": false,
+                    "defaultValue": {
+                        "value": 1
+                    },
+                    "field": "isExternal",
+                    "seqType": "Sequelize.TINYINT(1)"
                 }
             },
             "indexes": []
@@ -459,5 +467,5 @@
             "indexes": []
         }
     },
-    "revision": 6
+    "revision": 7
 }
