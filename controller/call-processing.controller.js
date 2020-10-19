@@ -8,30 +8,137 @@ const ongoingCallService = require('../services/ongoing-call.service');
 
 const { BadRequestError } = require('../errors');
 const hailHotlineService = require('../services/hail-hotline.service');
+const e = require('express');
 
 class CallProcessingController {
     async determineCallStatus(data) {
-        if (_.get(data, 'direction') === 'outbound') {
-            return;
-        }
-
         const callStatus = _.get(data, 'status');
+        const direction = _.get(data, 'direction');
+
         if (!callStatus) {
             throw new BadRequestError('invalid request');
         }
 
-        if (callStatus === 'created') {
-            if (Number.parseInt(process.env.DEBUG)) {
-                console.log(data);
-                console.log('-----------------------------------------------------------------------------------------');
-                console.log(`registering new inbound call with id ${_.get(data, 'call_id')}`);
+        if (direction === 'inbound') {
+            if (callStatus === 'created') {
+                if (Number.parseInt(process.env.DEBUG)) {
+                    console.log(data);
+                    console.log('-----------------------------------------------------------------------------------------');
+                    console.log(`registering new inbound call with id ${_.get(data, 'call_id')}`);
+                }
+                await this.registerNewCall(data);
+            } else if (callStatus === 'ringing' || callStatus === 'in-progress') {
+                await this.updateCall(data);
+            } else if (callStatus === 'ended') {
+                await this.endCall(data);
+            }
+        } else if (direction) {
+            if (callStatus === 'ringing') {
+                if (Number.parseInt(process.env.DEBUG)) {
+                    console.log(data);
+                    console.log('-----------------------------------------------------------------------------------------');
+                    console.log(`registering new outbound call with id ${_.get(data, 'call_id')}`);
+                }
+
+                await this.registerNewOutboundCall(data);
+            } else if (callStatus === 'in-progress') {
+                await this.updateCall(data);
+            } else if (callStatus === 'ended') {
+                await this.endCall(data);
+            }
+        }
+    }
+
+    async updateOutboundCall(data) {
+        const callId = _.get(data, 'call_id');
+        const callPickupData = { callId };
+
+        const callData = {
+            callId,
+            callStatus: 'in-progress'
+        };
+
+        const t = await db.sequelize.transaction();
+        try {
+            const pickupObject = await db.callPickup.create(callPickupData, { transaction: t });
+            callData.callPickup = pickupObject.toJSON();
+            callData.callPickup.callPickupTime = _.get(data, 'timestamp');
+
+            await t.commit();
+        } catch (error) {
+            await t.rollback();
+            throw error;
+        }
+
+        ongoingCallService.processCall(callData);
+    }
+
+    async registerNewOutboundCall(data) {
+        const callInitData = {};
+        const callRingingData = {};
+        const callData = {};
+
+        const t = await db.sequelize.transaction();
+
+        try {
+            const caller = await this.writeCaller(data, t, true);
+            callData.callerId = caller.id;
+
+            // gets callId from call-request
+            const callId = _.get(data, 'call_id');
+            callData.callId = callId;
+            callInitData.callId = callId;
+            callRingingData.callId = callId;
+
+            callData.calledNumber = _.get(data, 'destination.targets[0].number') || _.get(data, 'destination.number');
+            callData.callDirection = _.get(data, 'direction');
+
+            callInitData.callInitiationTime = _.get(data, 'timestamp');
+            callRingingData.callRingingTime = _.get(data, 'timestamp');
+
+            const callDestinationData = {
+                accountNumber: _.get(data, 'destination.targets[0].account_number'),
+                userName: _.get(data, 'destination.targets[0].name'),
+                number: _.get(data, 'destination.targets[0].number') || _.get(data, 'destination.number')
+            };
+
+            if (_.get(data, 'destination.targets[0].account_number')) {
+                callDestinationData.isExternal = 0;
             }
 
-            await this.registerNewCall(data);
-        } else if (callStatus === 'ringing' || callStatus === 'in-progress') {
-            await this.updateCall(data);
-        } else if (callStatus === 'ended') {
-            await this.endCall(data);
+            const callDestination = await db
+                .callDestination.create(callDestinationData, t);
+
+            callRingingData.destinationId = callDestination.id;
+            // creates corresponding objects in the database
+            const [
+                callInitiation,
+                callRinging
+            ] = await Promise.all([
+                db.callInitiation.create(callInitData, { transaction: t }),
+                db.callRinging.create(callRingingData, { transaction: t })
+            ]);
+            callData.callInitiationId = callInitiation.id;
+            callData.callRingingId = callRinging.id;
+
+            const createdCall = await db.call.create(callData, { transaction: t });
+
+            // creates an info object from the callData and
+            const jsonCall = createdCall.toJSON();
+            const infoObject = { ...jsonCall };
+            infoObject.callInitiation = callInitiation.toJSON();
+            infoObject.callRinging = callRinging.toJSON();
+            infoObject.callInitiation.callInitiationTime = _.get(data, 'timestamp');
+            infoObject.callRinging.callRingingTime = _.get(data, 'timestamp');
+            infoObject.caller = caller.toJSON();
+            infoObject.callStatus = 'ringing';
+
+            ongoingCallService.processCall(infoObject);
+
+            await t.commit();
+        } catch (error) {
+            await t.rollback();
+            throw error;
         }
     }
 
@@ -83,10 +190,13 @@ class CallProcessingController {
             ongoingCallService.processCall(infoObject);
 
             await t.commit();
-        } catch (e) {
-            console.log(e);
+        } catch (err) {
+            if (process.env.DEBUG) {
+                console.log(err);
+            }
+
             await t.rollback();
-            throw e;
+            throw err;
         }
     }
 
@@ -110,7 +220,13 @@ class CallProcessingController {
 
                 let destination = await db.callDestination.findOne({ where: { accountNumber: _.get(data, 'destination.targets[0].account_number') } });
                 if (!destination) {
-                    destination = await db.callDestination.create({ accountNumber: _.get(data, 'destination.targets[0].account_number') });
+                    const destinationData = {
+                        accountNumber: _.get(data, 'destination.targets[0].account_number'),
+                        userName: _.get(data, 'destination.targets[0].name'),
+                        number: _.get(data, 'destination.targets[0].number') || _.get(data, 'destination.number')
+                    };
+
+                    destination = await db.callDestination.create(destinationData, t);
                 }
 
                 ringingData.callId = callId;
@@ -210,16 +326,22 @@ class CallProcessingController {
      * Writes Caller Object to database
      * @param {Object} data
      * @param {Object} t
+     * @param {boolean} isOutbound
      */
-    async writeCaller(data, t) {
+    async writeCaller(data, t, isOutbound) {
         const writeData = {};
 
         writeData.phoneNumber = _.get(data, 'caller.number');
+        writeData.firstContactDate = _.get(data, 'timestamp');
+
+        if (isOutbound) {
+            writeData.isExternal = 0;
+        }
 
         const existingCaller = await db.caller.findOne({ where: { phoneNumber: writeData.phoneNumber } });
 
         if (existingCaller) {
-            existingCaller.lastContactDate = db.sequelize.literal('CURRENT_TIMESTAMP');
+            existingCaller.lastContactDate = _.get(data, 'timestamp');
             await existingCaller.save();
             return existingCaller;
         }
