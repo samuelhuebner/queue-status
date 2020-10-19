@@ -349,13 +349,18 @@ class CallProcessingController {
             writeData.isExternal = 0;
         }
 
+        const options = [];
+        if (writeData.phoneNumber) {
+            options.push({ phoneNumber: writeData.phoneNumber });
+        }
+
+        if (writeData.accountNumber) {
+            options.push({ accountNumber: writeData.accountNumber });
+        }
         const existingCaller = await db
             .caller.findOne({
                 where: {
-                    [Op.or]: [
-                        { phoneNumber: writeData.phoneNumber },
-                        { accountNumber: writeData.accountNumber }
-                    ]
+                    [Op.or]: options
                 }
             });
 
