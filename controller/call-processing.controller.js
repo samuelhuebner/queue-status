@@ -129,6 +129,7 @@ class CallProcessingController {
             infoObject.callRinging = callRinging.toJSON();
             infoObject.callInitiation.callInitiationTime = _.get(data, 'timestamp');
             infoObject.callRinging.callRingingTime = _.get(data, 'timestamp');
+            infoObject.destination = callDestination.toJSON();
             infoObject.caller = caller.toJSON();
             infoObject.callStatus = 'ringing';
 
