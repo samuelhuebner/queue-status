@@ -1,10 +1,12 @@
 /* eslint-disable max-len */
 const _ = require('lodash');
 const db = require('../models');
+const { Op } = require('sequelize');
 const event = require('../services/event.service');
 const hailQueue = require('../services/hail-hotline.service');
 const mainQueue = require('../services/main-hotline.service');
 const ongoingCallService = require('../services/ongoing-call.service');
+
 
 const { BadRequestError } = require('../errors');
 const hailHotlineService = require('../services/hail-hotline.service');
@@ -347,7 +349,15 @@ class CallProcessingController {
             writeData.isExternal = 0;
         }
 
-        const existingCaller = await db.caller.findOne({ where: { phoneNumber: writeData.phoneNumber } });
+        const existingCaller = await db
+            .caller.findOne({
+                where: {
+                    [Op.or]: [
+                        { phoneNumber: writeData.phoneNumber },
+                        { accountNumber: writeData.accountNumber }
+                    ]
+                }
+            });
 
         if (existingCaller) {
             existingCaller.lastContactDate = _.get(data, 'timestamp');
