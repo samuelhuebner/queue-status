@@ -41,7 +41,7 @@ class CallProcessingController {
 
                 await this.registerNewOutboundCall(data);
             } else if (callStatus === 'in-progress') {
-                await this.updateCall(data);
+                await this.updateOutboundCall(data);
             } else if (callStatus === 'ended') {
                 await this.endCall(data);
             }
