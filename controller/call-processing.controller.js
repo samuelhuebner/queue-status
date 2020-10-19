@@ -8,7 +8,6 @@ const ongoingCallService = require('../services/ongoing-call.service');
 
 const { BadRequestError } = require('../errors');
 const hailHotlineService = require('../services/hail-hotline.service');
-const e = require('express');
 
 class CallProcessingController {
     async determineCallStatus(data) {
