@@ -6,9 +6,9 @@
   "scripts": {
     "start": "npx nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "deploy-major": "npm version major -m \"Release v%s\"",
-    "deploy-minor": "npm version minor -m \"Release v%s\"",
-    "deploy-patch": "npm version patch -m \"Release v%s\"",
+    "deploy-major": "npm version major -m \"Release %s\"",
+    "deploy-minor": "npm version minor -m \"Release %s\"",
+    "deploy-patch": "npm version patch -m \"Release %s\"",
     "version": "",
     "postversion": "git push && git push --tags",
     "lint": "./node_modules/.bin/eslint ./"
