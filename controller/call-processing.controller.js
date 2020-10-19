@@ -332,7 +332,15 @@ class CallProcessingController {
     async writeCaller(data, t, isOutbound) {
         const writeData = {};
 
-        writeData.phoneNumber = _.get(data, 'caller.number');
+        const phoneNumber = _.get(data, 'caller.number');
+
+        if (phoneNumber && phoneNumber.length === 3) {
+            writeData.accountNumber = phoneNumber;
+        } else {
+            writeData.phoneNumber = phoneNumber;
+            writeData.accountNumber = _.get(data, 'caller.account_number');
+        }
+
         writeData.firstContactDate = _.get(data, 'timestamp');
 
         if (isOutbound) {
@@ -343,6 +351,15 @@ class CallProcessingController {
 
         if (existingCaller) {
             existingCaller.lastContactDate = _.get(data, 'timestamp');
+
+            if (!existingCaller.accountNumber) {
+                existingCaller.accountNumber = writeData.accountNumber;
+            }
+
+            if (!existingCaller.phoneNumber) {
+                existingCaller.phoneNumber = writeData.phoneNumber;
+            }
+
             await existingCaller.save();
             return existingCaller;
         }
