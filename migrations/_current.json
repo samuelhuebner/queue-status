@@ -319,6 +319,10 @@
                     "field": "phoneNumber",
                     "seqType": "Sequelize.STRING(30)"
                 },
+                "accountNumber": {
+                    "field": "accountNumber",
+                    "seqType": "Sequelize.STRING(10)"
+                },
                 "contact_id": {
                     "allowNull": true,
                     "field": "contact_id",
@@ -475,5 +479,5 @@
             "indexes": []
         }
     },
-    "revision": 8
+    "revision": 9
 }

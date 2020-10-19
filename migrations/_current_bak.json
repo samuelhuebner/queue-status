@@ -20,6 +20,14 @@
                 "number": {
                     "field": "number",
                     "seqType": "Sequelize.STRING(30)"
+                },
+                "isExternal": {
+                    "defaultValue": {
+                        "value": 0
+                    },
+                    "allowNull": false,
+                    "field": "isExternal",
+                    "seqType": "Sequelize.TINYINT(1)"
                 }
             },
             "indexes": []
@@ -467,5 +475,5 @@
             "indexes": []
         }
     },
-    "revision": 7
+    "revision": 8
 }
