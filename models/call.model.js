@@ -17,6 +17,10 @@ module.exports = (sequelize, DataTypes) => {
         calledNumber: {
             type: DataTypes.STRING(30),
             allowNull: false
+        },
+        callDirection: {
+            type: DataTypes.STRING,
+            allowNull: true
         }
     }, {
         tableName: 'call',

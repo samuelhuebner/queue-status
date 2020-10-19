@@ -1,37 +1,145 @@
 /* eslint-disable max-len */
 const _ = require('lodash');
 const db = require('../models');
+const { Op } = require('sequelize');
 const event = require('../services/event.service');
 const hailQueue = require('../services/hail-hotline.service');
 const mainQueue = require('../services/main-hotline.service');
+const ongoingCallService = require('../services/ongoing-call.service');
 
-const { NotFoundError, BadRequestError } = require('../errors');
+
+const { BadRequestError } = require('../errors');
 const hailHotlineService = require('../services/hail-hotline.service');
 
 class CallProcessingController {
     async determineCallStatus(data) {
-        console.log(data);
-
-        if (_.get(data, 'direction') === 'outbound') {
-            return;
-        }
-
         const callStatus = _.get(data, 'status');
+        const direction = _.get(data, 'direction');
+
         if (!callStatus) {
             throw new BadRequestError('invalid request');
         }
 
-        if (callStatus === 'created') {
-            if (process.env.DEBUG) {
-                console.log('-----------------------------------------------------------------------------------------');
-                console.log(`registering new inbound call with id ${_.get(data, 'call_id')}`);
+        if (direction === 'inbound') {
+            if (callStatus === 'created') {
+                if (Number.parseInt(process.env.DEBUG)) {
+                    console.log(data);
+                    console.log('-----------------------------------------------------------------------------------------');
+                    console.log(`registering new inbound call with id ${_.get(data, 'call_id')}`);
+                }
+                await this.registerNewCall(data);
+            } else if (callStatus === 'ringing' || callStatus === 'in-progress') {
+                await this.updateCall(data);
+            } else if (callStatus === 'ended') {
+                await this.endCall(data);
+            }
+        } else if (direction) {
+            if (callStatus === 'ringing') {
+                if (Number.parseInt(process.env.DEBUG)) {
+                    console.log(data);
+                    console.log('-----------------------------------------------------------------------------------------');
+                    console.log(`registering new outbound call with id ${_.get(data, 'call_id')}`);
+                }
+
+                await this.registerNewOutboundCall(data);
+            } else if (callStatus === 'in-progress') {
+                await this.updateOutboundCall(data);
+            } else if (callStatus === 'ended') {
+                await this.endCall(data);
+            }
+        }
+    }
+
+    async updateOutboundCall(data) {
+        const callId = _.get(data, 'call_id');
+        const callPickupData = { callId };
+
+        const callData = {
+            callId
+        };
+
+        const t = await db.sequelize.transaction();
+        try {
+            const pickupObject = await db.callPickup.create(callPickupData, { transaction: t });
+            callData.callPickup = pickupObject.toJSON();
+            callData.callPickup.callPickupTime = _.get(data, 'timestamp');
+
+            await t.commit();
+        } catch (error) {
+            await t.rollback();
+            throw error;
+        }
+
+        ongoingCallService.processCall(callData);
+    }
+
+    async registerNewOutboundCall(data) {
+        const callInitData = {};
+        const callRingingData = {};
+        const callData = {};
+
+        const t = await db.sequelize.transaction();
+
+        try {
+            const caller = await this.writeCaller(data, t, true);
+            callData.callerId = caller.id;
+
+            // gets callId from call-request
+            const callId = _.get(data, 'call_id');
+            callData.callId = callId;
+            callInitData.callId = callId;
+            callRingingData.callId = callId;
+
+            callData.calledNumber = _.get(data, 'destination.targets[0].number') || _.get(data, 'destination.number');
+            callData.callDirection = _.get(data, 'direction');
+
+            callInitData.callInitiationTime = _.get(data, 'timestamp');
+            callRingingData.callRingingTime = _.get(data, 'timestamp');
+
+            const callDestinationData = {
+                accountNumber: _.get(data, 'destination.targets[0].account_number'),
+                userName: _.get(data, 'destination.targets[0].name'),
+                number: _.get(data, 'destination.targets[0].number') || _.get(data, 'destination.number')
+            };
+
+            if (_.get(data, 'destination.targets[0].account_number')) {
+                callDestinationData.isExternal = 0;
             }
 
-            await this.registerNewCall(data);
-        } else if (callStatus === 'ringing' || callStatus === 'in-progress') {
-            await this.updateCall(data);
-        } else if (callStatus === 'ended') {
-            await this.endCall(data);
+            const callDestination = await db
+                .callDestination.create(callDestinationData, t);
+
+            callRingingData.destinationId = callDestination.id;
+            // creates corresponding objects in the database
+            const [
+                callInitiation,
+                callRinging
+            ] = await Promise.all([
+                db.callInitiation.create(callInitData, { transaction: t }),
+                db.callRinging.create(callRingingData, { transaction: t })
+            ]);
+            callData.callInitiationId = callInitiation.id;
+            callData.callRingingId = callRinging.id;
+
+            const createdCall = await db.call.create(callData, { transaction: t });
+
+            // creates an info object from the callData and
+            const jsonCall = createdCall.toJSON();
+            const infoObject = { ...jsonCall };
+            infoObject.callInitiation = callInitiation.toJSON();
+            infoObject.callRinging = callRinging.toJSON();
+            infoObject.callInitiation.callInitiationTime = _.get(data, 'timestamp');
+            infoObject.callRinging.callRingingTime = _.get(data, 'timestamp');
+            infoObject.destination = callDestination.toJSON();
+            infoObject.caller = caller.toJSON();
+            infoObject.callStatus = 'in-progress';
+
+            ongoingCallService.processCall(infoObject);
+
+            await t.commit();
+        } catch (error) {
+            await t.rollback();
+            throw error;
         }
     }
 
@@ -42,34 +150,54 @@ class CallProcessingController {
         const t = await db.sequelize.transaction();
 
         try {
-            callData.callerId = await this.writeCaller(data, t);
+            // writes caller entity of call
+            const caller = await this.writeCaller(data, t);
+            callData.callerId = caller.id;
 
+            // gets callId from call-request
             const callId = _.get(data, 'call_id');
-
             callData.callId = callId;
-            callData.calledNumber = _.get(data, 'destination.number');
             callInitData.callId = callId;
+
+            callData.calledNumber = _.get(data, 'destination.number');
+            callData.callDirection = _.get(data, 'direction');
+
+            // sets callinitiationTime to the time specified in the request
             callInitData.callInitiationTime = _.get(data, 'timestamp');
 
+            // if call-dest. is part of an hotline the according hotline needs to be updated
             if (callData.calledNumber === process.env.HOTLINE2_NUMBER) {
                 hailQueue.addNewCall(callId);
                 event.emit('hailQueueUpdate');
-            }
-
-            if (callData.calledNumber === process.env.HOTLINE1_NUMBER) {
+            } else if (callData.calledNumber === process.env.HOTLINE1_NUMBER) {
                 mainQueue.addNewCall(callId);
                 event.emit('mainQueueUpdate');
             }
 
+            // creates corresponding callInitiation object in the database
             const callInitiation = await db.callInitiation.create(callInitData, { transaction: t });
             callData.callInitiationId = callInitiation.id;
 
-            await db.call.create(callData, { transaction: t });
+            const createdCall = await db.call.create(callData, { transaction: t });
+
+            // creates an info object from the callData and
+            const jsonCall = createdCall.toJSON();
+            const infoObject = { ...jsonCall };
+            infoObject.callInitiation = callInitiation.toJSON();
+            infoObject.callInitiation.callInitiationTime = _.get(data, 'timestamp');
+            infoObject.caller = caller.toJSON();
+            infoObject.callStatus = 'initialized';
+
+            ongoingCallService.processCall(infoObject);
+
             await t.commit();
-        } catch (e) {
-            console.log(e);
+        } catch (err) {
+            if (process.env.DEBUG) {
+                console.log(err);
+            }
+
             await t.rollback();
-            throw e;
+            throw err;
         }
     }
 
@@ -91,18 +219,40 @@ class CallProcessingController {
                     event.emit('mainQueueUpdate');
                 }
 
-                let destination = await db.callDestination.findOne({ where: { accountNumber: data.destination.targets[0].account_number } });
+                let destination = await db.callDestination.findOne({ where: { accountNumber: _.get(data, 'destination.targets[0].account_number') } });
                 if (!destination) {
-                    destination = await db.callDestination.create({ accountNumber: _.get(data, 'destination.targets[0].account_number') });
+                    const destinationData = {
+                        accountNumber: _.get(data, 'destination.targets[0].account_number'),
+                        userName: _.get(data, 'destination.targets[0].name'),
+                        number: _.get(data, 'destination.targets[0].number') || _.get(data, 'destination.number')
+                    };
+
+                    destination = await db.callDestination.create(destinationData, t);
                 }
 
                 ringingData.callId = callId;
                 ringingData.destinationId = destination.id;
 
-                await db.callRinging.create(ringingData, { transaction: t });
+                const newRingObject = await db.callRinging.create(ringingData, { transaction: t });
+
+                const callData = {
+                    callId,
+                    callStatus: 'ringing',
+                    destination: destination.toJSON()
+                };
+                callData.callRinging = newRingObject.toJSON();
+                ongoingCallService.processCall(callData);
             } else if (data.status === 'in-progress') {
                 const callPickupData = { callId };
-                await db.callPickup.create(callPickupData, { transaction: t });
+                const pickupObject = await db.callPickup.create(callPickupData, { transaction: t });
+
+                const callData = {
+                    callId,
+                    callStatus: 'in-progress'
+                };
+                callData.callPickup = pickupObject.toJSON();
+                callData.callPickup.callPickupTime = _.get(data, 'timestamp');
+                ongoingCallService.processCall(callData);
             }
             await t.commit();
         } catch (e) {
@@ -111,7 +261,7 @@ class CallProcessingController {
         }
     }
 
-    async endCall(data) {
+    async endCall(data, isOutbound) {
         const callId = _.get(data, 'call_id');
 
         const callEndingData = { callId };
@@ -119,26 +269,25 @@ class CallProcessingController {
         const keyEndedReason = await db.keyEndedReason.findOne({ where: { reason: data.reason } });
 
         callEndingData.keyEndedReasonId = keyEndedReason.id;
-        callEndingData.callEndingTime = db.sequelize.literal('CURRENT_TIMESTAMP');
+        callEndingData.callEndingTime = _.get(data, 'timestamp');
+
+        if (!isOutbound) {
+            if (_.get(data, 'destination.number') === process.env.HOTLINE2_NUMBER) {
+                hailHotlineService.removeCall(callId);
+                event.emit('hailQueueUpdate');
+            }
+
+            if (_.get(data, 'destination.number') === process.env.HOTLINE1_NUMBER) {
+                mainQueue.removeCall(callId);
+                event.emit('mainQueueUpdate');
+            }
+        }
 
         await db.sequelize.transaction(async (t) => {
-            try {
-                await db.callEnding.create(callEndingData, { transaction: t });
-            } catch (e) {
-                throw e;
-            }
+            await db.callEnding.create(callEndingData, { transaction: t });
         });
 
-        if (_.get(data, 'destination.number') === process.env.HOTLINE2_NUMBER) {
-            hailHotlineService.removeCall(callId);
-            event.emit('hailQueueUpdate');
-        }
-
-        if (_.get(data, 'destination.number') === process.env.HOTLINE1_NUMBER) {
-            mainQueue.removeCall(callId);
-            event.emit('mainQueueUpdate');
-        }
-
+        ongoingCallService.removeOngoingCall({ callId });
         return this.processCall(callId);
     }
 
@@ -157,6 +306,7 @@ class CallProcessingController {
 
         if (!call) {
             await new Promise((resolve) => setTimeout(() => {
+                // eslint-disable-next-line no-unused-expressions
                 resolve, 1000;
             }));
 
@@ -175,20 +325,56 @@ class CallProcessingController {
         await call.save();
     }
 
-    async writeCaller(data, t) {
+    /**
+     * Writes Caller Object to database
+     * @param {Object} data
+     * @param {Object} t
+     * @param {boolean} isOutbound
+     */
+    async writeCaller(data, t, isOutbound) {
         const writeData = {};
 
-        writeData.phoneNumber = _.get(data, 'caller.number');
+        const phoneNumber = _.get(data, 'caller.number');
 
-        const existingCaller = await db.caller.findOne({ where: { phoneNumber: writeData.phoneNumber } });
+        if (phoneNumber && phoneNumber.length === 3) {
+            writeData.accountNumber = phoneNumber;
+        } else {
+            writeData.phoneNumber = phoneNumber;
+            writeData.accountNumber = _.get(data, 'caller.account_number');
+        }
+
+        writeData.firstContactDate = _.get(data, 'timestamp');
+
+        if (isOutbound) {
+            writeData.isExternal = 0;
+        }
+
+        const existingCaller = await db
+            .caller.findOne({
+                where: {
+                    [Op.or]: [
+                        { phoneNumber: writeData.phoneNumber },
+                        { accountNumber: writeData.accountNumber }
+                    ]
+                }
+            });
 
         if (existingCaller) {
-            existingCaller.lastContactDate = db.sequelize.literal('CURRENT_TIMESTAMP');
+            existingCaller.lastContactDate = _.get(data, 'timestamp');
+
+            if (!existingCaller.accountNumber) {
+                existingCaller.accountNumber = writeData.accountNumber;
+            }
+
+            if (!existingCaller.phoneNumber) {
+                existingCaller.phoneNumber = writeData.phoneNumber;
+            }
+
             await existingCaller.save();
-            return existingCaller.id;
+            return existingCaller;
         }
         const newCaller = await db.caller.create(writeData, { transaction: t });
-        return newCaller.id;
+        return newCaller;
     }
 }
 

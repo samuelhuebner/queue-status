@@ -9,6 +9,9 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING(30),
             allowNull: true
         },
+        accountNumber: {
+            type: DataTypes.STRING(10)
+        },
         contact_id: {
             type: DataTypes.INTEGER,
             allowNull: true
@@ -21,6 +24,11 @@ module.exports = (sequelize, DataTypes) => {
         lastContactDate: {
             type: DataTypes.DATE,
             allowNull: true
+        },
+        isExternal: {
+            type: DataTypes.TINYINT(1),
+            allowNull: false,
+            defaultValue: 1
         }
     }, { tableName: 'caller', timestamps: false });
 

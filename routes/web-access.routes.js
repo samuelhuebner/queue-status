@@ -4,6 +4,8 @@ const _ = require('lodash');
 const { Router } = require('express');
 const { QueueInfoController, CallInformationController } = require('../controller');
 
+const ongoingCallService = require('../services/ongoing-call.service');
+
 class WebAccessRoutes {
     constructor() {
         this.router = new Router();
@@ -13,7 +15,8 @@ class WebAccessRoutes {
 
         this.router.get('/queue-status/hotline1', this.getHotlineOneStatus.bind(this));
         this.router.get('/queue-status/hotline2', this.getHotlineTwoStatus.bind(this));
-        this.router.get('/queue-status/event-stream', this.getEventStream.bind(this));
+        this.router.get('/call-stats/current', this.getCurrentCalls.bind(this));
+        this.router.get('/call-stats/current/:id', this.getCall.bind(this));
         this.router.get('/call-stats/monthly-inbound', this.getMonthlyInboundCallCount.bind(this));
         this.router.get('/call-stats/daily-reachability', this.getDailyInboundReachability.bind(this));
     }
@@ -54,16 +57,20 @@ class WebAccessRoutes {
         res.status(200).send({ reachability: 100, numberOfCalls: count });
     }
 
-    getEventStream(req, res, next) {
-        res.set('Access-Control-Allow-Origin', '*'); // TODO: allow only frontend url
-        res.writeHead(200, {
-            'Content-Type': 'text/event-stream',
-            'Cache-Control': 'no-cache',
-            Connection: 'keep-alive'
-        });
-        res.write('\n');
+    getCurrentCalls(req, res, next) {
+        try {
+            res.send(ongoingCallService.getOngoingCallsList());
+        } catch (error) {
+            next(error);
+        }
+    }
 
-        this.getStatus(req, res, next);
+    getCall(req, res, next) {
+        try {
+            res.send(ongoingCallService.getCall(req.params.id));
+        } catch (error) {
+            next(error);
+        }
     }
 }
 

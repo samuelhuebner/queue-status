@@ -1,0 +1,79 @@
+const event = require('./event.service');
+
+class OngoingCallService {
+    constructor() {
+        this.ongoingCalls = [];
+    }
+
+    getOngoingCallsList() {
+        return this.ongoingCalls.filter((item) => !item.isDeleted);
+    }
+
+    addNewCall(call) {
+        this.ongoingCalls.unshift(call);
+        event.emit('callInserted', call.callId);
+    }
+
+    processCall(call) {
+        let successful = false;
+        this.ongoingCalls.forEach((item, index) => {
+            if (item.callId !== call.callId) {
+                return;
+            }
+
+            if (item.isDeleted) {
+                successful = true;
+                this.ongoingCalls.splice(index, 1);
+                return;
+            }
+
+            if (call.callStatus === 'initialized') {
+                call.callStatus = item.callStatus;
+            }
+
+            this.ongoingCalls[index] = { ...item, ...call };
+            successful = true;
+            event.emit('callUpdated', call.callId);
+        });
+
+        if (!successful) {
+            this.addNewCall(call);
+        }
+    }
+
+    removeOngoingCall(call) {
+        let successful = false;
+        this.ongoingCalls.forEach((item, index) => {
+            if (item.callId !== call.callId) {
+                return;
+            }
+
+            const [deleted] = this.ongoingCalls.splice(index, 1);
+            if (deleted) {
+                event.emit('callFinished', deleted.callId);
+                successful = true;
+            }
+        });
+
+        if (successful) {
+            return;
+        }
+
+        this.ongoingCalls.unshift({ callId: call.callId, isDeleted: 1 });
+    }
+
+    getCall(callId) {
+        let returnValue = {};
+        this.ongoingCalls.forEach((item) => {
+            if (item.callId !== callId) {
+                return;
+            }
+
+            returnValue = item;
+        });
+
+        return returnValue;
+    }
+}
+
+module.exports = new OngoingCallService();
