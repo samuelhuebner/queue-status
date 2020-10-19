@@ -53,8 +53,7 @@ class CallProcessingController {
         const callPickupData = { callId };
 
         const callData = {
-            callId,
-            callStatus: 'in-progress'
+            callId
         };
 
         const t = await db.sequelize.transaction();
@@ -131,7 +130,7 @@ class CallProcessingController {
             infoObject.callRinging.callRingingTime = _.get(data, 'timestamp');
             infoObject.destination = callDestination.toJSON();
             infoObject.caller = caller.toJSON();
-            infoObject.callStatus = 'ringing';
+            infoObject.callStatus = 'in-progress';
 
             ongoingCallService.processCall(infoObject);
 
