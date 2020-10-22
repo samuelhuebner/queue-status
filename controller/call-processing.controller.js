@@ -288,6 +288,8 @@ class CallProcessingController {
 
         const callEndingData = { callId };
 
+        const number = _.get(data, 'destination.number') || _.get(data, 'destination.targets[0].number');
+
         const keyEndedReason = await db.keyEndedReason.findOne({ where: { reason: data.reason } });
 
         callEndingData.keyEndedReasonId = keyEndedReason.id;
@@ -310,10 +312,16 @@ class CallProcessingController {
         });
 
         ongoingCallService.removeOngoingCall({ callId });
-        return this.processCall(callId);
+
+        setTimeout(this.processCall(callId, number), 2000);
     }
 
-    async processCall(callId) {
+    /**
+     *
+     * @param {string} callId
+     * @param {number} isOutbound
+     */
+    async processCall(callId, calledNumber) {
         const [
             call,
             callRinging,
@@ -327,12 +335,26 @@ class CallProcessingController {
         ]);
 
         if (!call) {
-            await new Promise((resolve) => setTimeout(() => {
-                // eslint-disable-next-line no-unused-expressions
-                resolve, 1000;
-            }));
+            const callData = {};
+            const callInitiationData = {};
+            const t = await db.sequelize.transaction();
+            callData.callId = callId;
+            callData.callEndingId = callEnding.id;
+            callData.wasSuccessful = 0;
+            callData.calledNumber = calledNumber;
+            callData.callDirection = 'outbound';
+            callInitiationData.callId = callId;
+            callInitiationData.callInitiationTime = callEnding.callEndingTime || new Date();
 
-            console.log('call not yet existing, waiting for finished transaction');
+            try {
+                const callInitiation = await db.callInitiation.create(callInitiationData, { transaction: t });
+                callData.callInitiationId = callInitiation.id;
+                await db.call.create(callData, { transaction: t });
+                await t.commit();
+            } catch (error) {
+                await t.rollback();
+            }
+            return;
         }
 
         call.callRingingId = _.get(callRinging, 'id');
