@@ -30,6 +30,11 @@ module.exports = (sequelize, DataTypes) => {
         validationToken: {
             type: DataTypes.STRING,
             allowNull: true
+        },
+        isAdmin: {
+            type: DataTypes.TINYINT(1),
+            allowNull: false,
+            defaultValue: 0
         }
     });
 

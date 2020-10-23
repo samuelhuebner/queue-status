@@ -465,6 +465,14 @@
                     "field": "validationToken",
                     "seqType": "Sequelize.STRING"
                 },
+                "isAdmin": {
+                    "allowNull": false,
+                    "defaultValue": {
+                        "value": 0
+                    },
+                    "field": "isAdmin",
+                    "seqType": "Sequelize.TINYINT(1)"
+                },
                 "createdAt": {
                     "allowNull": false,
                     "field": "createdAt",
@@ -479,5 +487,5 @@
             "indexes": []
         }
     },
-    "revision": 9
+    "revision": 10
 }
