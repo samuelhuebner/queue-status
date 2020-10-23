@@ -41,7 +41,6 @@ class WebAccessRoutes {
 
     async getMonthlyInboundCallCount(req, res, next) {
         const count = await this.callInfoController.getInboundCallNumber();
-        res.set('Access-Control-Allow-Origin', '*'); // TODO: allow only frontend url
         res.status(200).send({ count });
     }
 

@@ -1,4 +1,3 @@
-const db = require('../models');
 const hailHotlineService = require('../services/hail-hotline.service');
 const mainHotlineService = require('../services/main-hotline.service');
 

@@ -65,10 +65,6 @@ class CallInformationController {
             successfulCalls
         };
     }
-
-    async getOngoingCalls() {
-
-    }
 }
 
 module.exports = CallInformationController;
