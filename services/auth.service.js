@@ -84,7 +84,6 @@ ${process.env.APP_URL}/verify/user?secret=${encrypted}`,
         const b64 = cryptoJs
             .AES.encrypt(`id=${userId}&token=${verificationToken}`, process.env.API_KEY);
 
-        console.log(b64.toString);
         return encodeURIComponent(b64.toString());
     }
 
