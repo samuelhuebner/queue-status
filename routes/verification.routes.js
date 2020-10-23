@@ -10,9 +10,8 @@ class VerificationRoutes {
     }
 
     async verifyUser(req, res, next) {
-        const userId = _.get(req, 'query.userId');
-        const token = _.get(req, 'query.token');
-        verifyService.verifyUser(userId, token)
+        const secret = _.get(req, 'query.secret');
+        verifyService.verifyUser(secret)
             .then((result) => res.send(result))
             .catch((error) => next(error));
     }

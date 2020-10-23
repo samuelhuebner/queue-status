@@ -1,4 +1,5 @@
 const argon2 = require('argon2');
+const cryptoJs = require('crypto-js');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
 const cryptoRandomString = require('crypto-random-string');
@@ -52,10 +53,12 @@ class AuthService {
         try {
             const newUser = await models.user.create(userData, { transaction: t });
 
+            const encrypted = this.encrypt(newUser.id, verificationToken);
+
             const options = {
                 rawContent: `Hello from calls.pdr-team.de!
 Here is your verification Link for your new account:
-${process.env.APP_URL}/verify/user?userId=${newUser.id}&token=${verificationToken}`,
+${process.env.APP_URL}/verify/user?secret=${encrypted}`,
                 subject: 'Please verify your account',
                 recipient: newUser.email
             };
@@ -75,6 +78,14 @@ ${process.env.APP_URL}/verify/user?userId=${newUser.id}&token=${verificationToke
             await t.rollback();
             throw error;
         }
+    }
+
+    encrypt(userId, verificationToken) {
+        const b64 = cryptoJs
+            .AES.encrypt(`id=${userId}&token=${verificationToken}`, process.env.API_KEY);
+
+        console.log(b64.toString);
+        return encodeURIComponent(b64.toString());
     }
 
     async login(username, password) {
