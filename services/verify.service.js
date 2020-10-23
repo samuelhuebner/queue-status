@@ -14,8 +14,6 @@ class VerifyService {
         const parsedId = Number.parseInt(id);
         const user = await models.user.findByPk(parsedId);
 
-
-
         if (!user) {
             throw new NotFoundError();
         }
