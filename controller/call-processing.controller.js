@@ -313,7 +313,11 @@ class CallProcessingController {
 
         ongoingCallService.removeOngoingCall({ callId });
 
-        setTimeout(this.processCall(callId, number), 2000);
+        function handler() {
+            this.processCall(callId, number);
+        }
+
+        setTimeout(handler, 2000);
     }
 
     /**
