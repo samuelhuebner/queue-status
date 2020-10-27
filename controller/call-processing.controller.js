@@ -313,11 +313,16 @@ class CallProcessingController {
 
         ongoingCallService.removeOngoingCall({ callId });
 
-        function handler() {
-            this.processCall(callId, number);
-        }
+        this.wait()
+            .then(() => {
+                this.processCall(callId, number);
+            });
+    }
 
-        setTimeout(handler, 2000);
+    async wait() {
+        return new Promise((resolve) => {
+            setTimeout(resolve, 1000);
+        });
     }
 
     /**
