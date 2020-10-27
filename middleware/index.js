@@ -4,5 +4,6 @@ module.exports = {
     error: require('./error.mw'),
     auth: require('./auth.mw'),
     cors: require('./cors.mw'),
-    jwtAuth: require('./jwt-auth-mw')
+    jwtAuth: require('./jwt-auth-mw'),
+    rights: require('./rights.mw')
 };

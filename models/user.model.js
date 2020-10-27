@@ -38,5 +38,11 @@ module.exports = (sequelize, DataTypes) => {
         }
     });
 
+    // user.addScopes((models) => {
+    //     models.user.addScope('publicScope', {
+
+    //     });
+    // });
+
     return user;
 };
