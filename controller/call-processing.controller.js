@@ -326,6 +326,7 @@ class CallProcessingController {
      * @param {number} isOutbound
      */
     async processCall(callId, calledNumber) {
+        console.log('processing call ' + callId + ' with called number: ' + calledNumber);
         const [
             call,
             callRinging,
