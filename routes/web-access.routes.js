@@ -82,7 +82,7 @@ class WebAccessRoutes {
 
             await this
                 .callProcessingController
-                .endCall({ callId: _.get(call, 'callId'), reason: 'manual-completion' }, _.get(call, 'direction'));
+                .endCall({ call_id: _.get(call, 'callId'), reason: 'manual-completion' }, _.get(call, 'direction'));
             res.send();
         } catch (error) {
             console.log(error);
