@@ -77,6 +77,7 @@ class WebAccessRoutes {
     async removeStuckCall(req, res, next) {
         try {
             const call = ongoingCallService.getCall(req.body.callId);
+            console.log(call);
             ongoingCallService.removeOngoingCall(_.get(call, 'callId'));
 
             await this
