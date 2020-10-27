@@ -18,7 +18,7 @@ class WebAccessRoutes {
         this.router.get('/queue-status/hotline2', this.getHotlineTwoStatus.bind(this));
         this.router.get('/call-stats/current', this.getCurrentCalls.bind(this));
         this.router.get('/call-stats/current/:id', this.getCall.bind(this));
-        this.router.delete('/call-stats/current/', this.removeStuckCall.bind(this));
+        this.router.post('/call-stats/current/', this.removeStuckCall.bind(this));
         this.router.get('/call-stats/monthly-inbound', this.getMonthlyInboundCallCount.bind(this));
         this.router.get('/call-stats/daily-reachability', this.getDailyInboundReachability.bind(this));
     }
