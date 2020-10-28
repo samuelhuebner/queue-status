@@ -16,7 +16,6 @@ class AdminRoutes {
             .then((result) => res.send(result))
             .catch((e) => next(e));
     }
-
     // async authenticateUser(req, res, next) {
     //     const username = _.get(req, 'body.username');
     //     const password = _.get(req, 'body.password');

@@ -11,7 +11,8 @@ const {
     auth,
     jwtAuth,
     cors,
-    rights
+    rights,
+    preflight
 } = require('./middleware');
 
 const event = require('./services/event.service');
@@ -20,6 +21,7 @@ class Server {
     constructor(routes) {
         this.app = new Express();
         this.app.use(cors);
+        this.app.options('/*', preflight);
         this.app.use(bodyParser.json({ limit: '50mb' }));
         if (Number.parseInt(process.env.DEBUG)) {
             this.app.use(debug);
