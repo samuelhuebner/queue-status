@@ -323,9 +323,9 @@
                     "field": "accountNumber",
                     "seqType": "Sequelize.STRING(10)"
                 },
-                "contact_id": {
+                "contactId": {
                     "allowNull": true,
-                    "field": "contact_id",
+                    "field": "contactId",
                     "seqType": "Sequelize.INTEGER"
                 },
                 "firstContactDate": {
@@ -487,5 +487,5 @@
             "indexes": []
         }
     },
-    "revision": 10
+    "revision": 11
 }
