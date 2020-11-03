@@ -293,7 +293,7 @@ class CallProcessingController {
         const keyEndedReason = await db.keyEndedReason.findOne({ where: { reason: data.reason } });
 
         callEndingData.keyEndedReasonId = keyEndedReason.id;
-        callEndingData.callEndingTime = _.get(data, 'timestamp');
+        callEndingData.callEndingTime = _.get(data, 'timestamp') || new Date();
 
         if (!isOutbound) {
             if (_.get(data, 'destination.number') === process.env.HOTLINE2_NUMBER) {
@@ -313,7 +313,16 @@ class CallProcessingController {
 
         ongoingCallService.removeOngoingCall({ callId });
 
-        setTimeout(this.processCall(callId, number), 2000);
+        this.wait()
+            .then(() => {
+                this.processCall(callId, number);
+            });
+    }
+
+    async wait() {
+        return new Promise((resolve) => {
+            setTimeout(resolve, 1000);
+        });
     }
 
     /**

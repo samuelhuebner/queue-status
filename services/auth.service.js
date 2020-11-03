@@ -109,7 +109,8 @@ ${process.env.APP_URL}/verify/user?secret=${encrypted}`,
             user: {
                 id: userRecord.id,
                 username: userRecord.username,
-                name: userRecord.name
+                name: userRecord.name,
+                isAdmin: userRecord.isAdmin
             },
             token: this.generateJWT(userRecord)
         };

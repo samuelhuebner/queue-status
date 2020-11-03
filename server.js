@@ -5,7 +5,15 @@ require('dotenv').config();
 
 const Express = require('express');
 const bodyParser = require('body-parser');
-const { error, debug, auth, jwtAuth, cors } = require('./middleware');
+const {
+    error,
+    debug,
+    auth,
+    jwtAuth,
+    cors,
+    rights,
+    preflight
+} = require('./middleware');
 
 const event = require('./services/event.service');
 
@@ -13,12 +21,14 @@ class Server {
     constructor(routes) {
         this.app = new Express();
         this.app.use(cors);
+        this.app.options('/*', preflight);
         this.app.use(bodyParser.json({ limit: '50mb' }));
         if (Number.parseInt(process.env.DEBUG)) {
             this.app.use(debug);
         }
         this.app.use(jwtAuth);
         this.app.use(auth);
+        this.app.use(rights);
         this.app.use(routes);
         this.app.use(error);
         this.app.listen(process.env.SVC_PORT, () => console.log(`${process.env.SVC_NAME} listening to port ${process.env.SVC_PORT}`));
@@ -26,7 +36,7 @@ class Server {
         this.http = require('http').Server(this.app);
 
         // const allowedOrigins = `https://${process.env.FRONTEND_URL}:*`;
-        const allowedOrigins = `*:*`;
+        const allowedOrigins = '*:*';
 
         this.io = require('socket.io')(this.http, { path: '/websocket/socket.io', transport: ['websocket'], origins: allowedOrigins });
 

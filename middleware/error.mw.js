@@ -5,4 +5,5 @@ module.exports = (err, req, res, next) => {
 
     res.setHeader('Content-Type', 'application/json');
     res.status(status).send({ error: err });
+    res.end();
 };
