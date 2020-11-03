@@ -60,14 +60,14 @@ class CallInformationController {
             ]
         });
 
-        calls.filter((call) => call.callEnding);
+        const filtered = calls.filter((call) => call.callEnding);
 
-        calls.forEach((item, index) => {
-            calls[index] = this.processCall(item.toJSON());
+        filtered.forEach((item, index) => {
+            filtered[index] = this.processCall(item.toJSON());
         });
 
         console.log('sending calls');
-        return calls;
+        return filtered;
     }
 
     processCall(call) {
