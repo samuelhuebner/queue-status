@@ -26,6 +26,7 @@ class WebAccessRoutes {
 
         this.router.get('/call-stats/calls', this.getAllCalls.bind(this));
         this.router.get('/call-stats/destinations', this.getDestinationsHandler.bind(this));
+        this.router.get('/call-stats/destinations/:id', this.getDestinationsHandler.bind(this));
     }
 
     getHotlineOneStatus(req, res, next) {
@@ -86,7 +87,7 @@ class WebAccessRoutes {
     }
 
     getDestinationsHandler(req, res, next) {
-        this.callInfoController.getCallDestinations()
+        this.callInfoController.getCallDestinations(req.params.id)
             .then((result) => res.send(result))
             .catch((error) => next(error));
     }

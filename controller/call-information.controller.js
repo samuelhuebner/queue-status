@@ -34,8 +34,17 @@ class CallInformationController {
         });
     }
 
-    async getCallDestinations() {
-        return db.callDestination.findAll();
+    /**
+     * Gets call Destinations related to a user if a contact iD is specified. Otherwise all destinations are returned
+     *
+     * @param {number} contactId
+     */
+    async getCallDestinations(contactId) {
+        if (!contactId) {
+            return db.callDestination.findAll();
+        }
+
+        return db.callDestination.findAll({ where: { contactId } });
     }
 
     /**
