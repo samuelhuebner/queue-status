@@ -28,6 +28,11 @@
                     "allowNull": false,
                     "field": "isExternal",
                     "seqType": "Sequelize.TINYINT(1)"
+                },
+                "contactId": {
+                    "allowNull": true,
+                    "field": "contactId",
+                    "seqType": "Sequelize.INTEGER.UNSIGNED"
                 }
             },
             "indexes": []
@@ -487,5 +492,5 @@
             "indexes": []
         }
     },
-    "revision": 11
+    "revision": 12
 }
