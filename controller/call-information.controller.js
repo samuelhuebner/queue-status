@@ -44,30 +44,33 @@ class CallInformationController {
         startDate.setHours(0, 0, 0, 0);
         endDate.setHours(23, 59, 59, 59);
 
-        const calls = await db.call.findAll({
-            include: [
-                {
-                    model: db.callInitiation,
-                    where: { callInitiationTime: { [Op.between]: [startDate, endDate] } }
-                },
-                { model: db.callRinging, include: [db.callDestination] },
-                { model: db.callEnding, include: [db.keyEndedReason] },
-                db.callPickup,
-                db.caller
-            ],
-            order: [
-                [{ model: db.callInitiation }, 'callInitiationTime', 'DESC']
-            ]
-        });
+        try {
+            const calls = await db.call.findAll({
+                include: [
+                    {
+                        model: db.callInitiation,
+                        where: { callInitiationTime: { [Op.between]: [startDate, endDate] } }
+                    },
+                    { model: db.callRinging, include: [db.callDestination] },
+                    { model: db.callEnding, include: [db.keyEndedReason] },
+                    db.callPickup,
+                    db.caller
+                ],
+                order: [
+                    [{ model: db.callInitiation }, 'callInitiationTime', 'DESC']
+                ]
+            });
 
-        const filtered = calls.filter((call) => call.callEnding);
+            const filtered = calls.filter((call) => call.callEnding);
 
-        filtered.forEach((item, index) => {
-            filtered[index] = this.processCall(item.toJSON());
-        });
-
-        console.log('sending calls');
-        return filtered;
+            filtered.forEach((item, index) => {
+                filtered[index] = this.processCall(item.toJSON());
+            });
+            return filtered;
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
     }
 
     processCall(call) {
