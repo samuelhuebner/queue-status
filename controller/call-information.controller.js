@@ -34,6 +34,10 @@ class CallInformationController {
         });
     }
 
+    async getCallDestinations() {
+        return db.callDestination.findAll();
+    }
+
     /**
      * This function gets all calls from the database which lay inbetween the given start and end Date
      * If no Date is specified the current Date is initialized as the search parameter

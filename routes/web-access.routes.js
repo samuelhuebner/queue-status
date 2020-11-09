@@ -25,6 +25,7 @@ class WebAccessRoutes {
         this.router.get('/call-stats/daily-reachability', this.getDailyInboundReachability.bind(this));
 
         this.router.get('/call-stats/calls', this.getAllCalls.bind(this));
+        this.router.get('/call-stats/destinations', this.getDestinationsHandler.bind(this));
     }
 
     getHotlineOneStatus(req, res, next) {
@@ -82,6 +83,12 @@ class WebAccessRoutes {
         } catch (error) {
             next(error);
         }
+    }
+
+    getDestinationsHandler(req, res, next) {
+        this.callInfoController.getCallDestinations()
+            .then((result) => res.send(result))
+            .catch((error) => next(error));
     }
 
     async removeStuckCall(req, res, next) {
