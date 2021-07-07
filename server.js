@@ -55,6 +55,7 @@ class Server {
 
         event.on('updatehotline2', () => {
             this.io.sockets.emit('updatehotline2');
+            console.log('emitted)');
         });
 
         event.on('mainQueueUpdate', () => {
