@@ -8,6 +8,22 @@ class QueueInfoController {
     getHotlineTwoQueueStatus() {
         return hailQueue.length;
     }
+
+    /**
+     * Resets the hotline counter to 0
+     * @param {number} hotlineId
+     */
+    resetHotline(hotlineId) {
+        switch (hotlineId) {
+            case 1:
+                mainQueue.resetHotline();
+                break;
+            case 2:
+                hailQueue.resetHotline();
+                break;
+            default:
+                break;
+        }
     }
 }
 

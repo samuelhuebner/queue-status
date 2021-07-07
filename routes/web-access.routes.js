@@ -17,6 +17,8 @@ class WebAccessRoutes {
         this.router.get('/queue-status/hotline1', this.getHotlineOneStatus.bind(this));
         this.router.get('/queue-status/hotline2', this.getHotlineTwoStatus.bind(this));
 
+        this.router.post('/queue-status/hotline/reset', this.resetHotlineStatus.bind(this));
+
         this.router.get('/call-stats/current', this.getCurrentCalls.bind(this));
         this.router.get('/call-stats/current/:id', this.getCall.bind(this));
         this.router.post('/call-stats/current/', this.removeStuckCall.bind(this));
@@ -36,6 +38,12 @@ class WebAccessRoutes {
         } catch (error) {
             next(error);
         }
+    }
+
+    resetHotlineStatus(req, res, next) {
+        const hotlineNumber = parseInt(_.get(req.body, 'hotlineNumber'));
+        this.queueInfoController.resetHotline(hotlineNumber);
+        res.status(200).send();
     }
 
     getHotlineTwoStatus(req, res, next) {
