@@ -1,3 +1,5 @@
+const event = require('./event.service');
+
 class QueueService {
     /**
      * Creates a new QueueService object
@@ -45,6 +47,8 @@ class QueueService {
      */
     resetHotline() {
         this.queuedCalls = {};
+
+        event.emit(`updatehotline${this.queueId}`);
     }
 }
 
