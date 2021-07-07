@@ -1,13 +1,13 @@
-const hailHotlineService = require('../services/hail-hotline.service');
-const mainHotlineService = require('../services/main-hotline.service');
+const { hailQueue, mainQueue } = require('../services/queue.service');
 
 class QueueInfoController {
     getHotlineOneQueueStatus() {
-        return mainHotlineService.length;
+        return mainQueue.length;
     }
 
     getHotlineTwoQueueStatus() {
-        return hailHotlineService.length;
+        return hailQueue.length;
+    }
     }
 }
 

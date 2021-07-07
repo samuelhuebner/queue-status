@@ -3,12 +3,11 @@ const _ = require('lodash');
 const { Op } = require('sequelize');
 const db = require('../models');
 const event = require('../services/event.service');
-const hailQueue = require('../services/hail-hotline.service');
-const mainQueue = require('../services/main-hotline.service');
+const { hailQueue, mainQueue } = require('../services/queue.service');
+
 const ongoingCallService = require('../services/ongoing-call.service');
 
 const { BadRequestError } = require('../errors');
-const hailHotlineService = require('../services/hail-hotline.service');
 
 class CallProcessingController {
     async determineCallStatus(data) {
@@ -184,7 +183,7 @@ class CallProcessingController {
             callData.calledNumber = _.get(data, 'destination.number');
             callData.callDirection = _.get(data, 'direction');
 
-            // sets callinitiationTime to the time specified in the request
+            // sets callInitiationTime to the time specified in the request
             callInitData.callInitiationTime = _.get(data, 'timestamp');
 
             // if call-dest. is part of an hotline the according hotline needs to be updated
@@ -279,7 +278,7 @@ class CallProcessingController {
             await t.commit();
         } catch (e) {
             await t.rollback();
-            console.log(e);
+            console.error(e);
         }
     }
 
@@ -297,7 +296,7 @@ class CallProcessingController {
 
         if (!isOutbound) {
             if (_.get(data, 'destination.number') === process.env.HOTLINE2_NUMBER) {
-                hailHotlineService.removeCall(callId);
+                hailQueue.removeCall(callId);
                 event.emit('hailQueueUpdate');
             }
 
