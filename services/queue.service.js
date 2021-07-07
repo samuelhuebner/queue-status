@@ -48,7 +48,9 @@ class QueueService {
     resetHotline() {
         this.queuedCalls = {};
 
-        event.emit(`updatehotline${this.queueId}`);
+        const s = `updatehotline${this.queueId}`;
+        console.log(s);
+        event.emit(s);
     }
 }
 
