@@ -42,6 +42,7 @@ class WebAccessRoutes {
 
     resetHotlineStatus(req, res, next) {
         const hotlineNumber = parseInt(_.get(req.body, 'hotlineNumber'));
+        console.log(hotlineNumber);
         this.queueInfoController.resetHotline(hotlineNumber);
         res.status(200).send();
     }

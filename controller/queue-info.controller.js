@@ -16,12 +16,15 @@ class QueueInfoController {
     resetHotline(hotlineId) {
         switch (hotlineId) {
             case 1:
+                console.log(hotlineId);
                 mainQueue.resetHotline();
                 break;
             case 2:
+                console.log(hotlineId);
                 hailQueue.resetHotline();
                 break;
             default:
+                console.log('break');
                 break;
         }
     }
