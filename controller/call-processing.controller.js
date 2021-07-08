@@ -295,12 +295,10 @@ class CallProcessingController {
         callEndingData.callEndingTime = _.get(data, 'timestamp') || new Date();
 
         if (!isOutbound) {
-            if (_.get(data, 'destination.number') === process.env.HOTLINE2_NUMBER) {
+            if (String(number) === process.env.HOTLINE2_NUMBER) {
                 hailQueue.removeCall(callId);
                 event.emit('hailQueueUpdate');
-            }
-
-            if (_.get(data, 'destination.number') === process.env.HOTLINE1_NUMBER) {
+            } else if (String(number) === process.env.HOTLINE1_NUMBER) {
                 mainQueue.removeCall(callId);
                 event.emit('mainQueueUpdate');
             }
