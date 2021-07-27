@@ -278,41 +278,39 @@ class CallProcessingController {
             await t.commit();
         } catch (e) {
             await t.rollback();
-            console.error(e);
+            throw e;
         }
     }
 
     async endCall(data, isOutbound) {
         const callId = _.get(data, 'call_id');
+        ongoingCallService.removeOngoingCall({ callId });
 
-        const callEndingData = { callId };
-
-        const number = _.get(data, 'destination.number') || _.get(data, 'destination.targets[0].number');
-
-        const keyEndedReason = await db.keyEndedReason.findOne({ where: { reason: data.reason } });
-
-        callEndingData.keyEndedReasonId = keyEndedReason.id;
-        callEndingData.callEndingTime = _.get(data, 'timestamp') || new Date();
+        const dialedNumber = _.get(data, 'destination.number') || _.get(data, 'destination.targets[0].number');
 
         if (!isOutbound) {
-            if (String(number) === process.env.HOTLINE2_NUMBER) {
+            if (String(dialedNumber) === process.env.HOTLINE2_NUMBER) {
                 hailQueue.removeCall(callId);
                 event.emit('hailQueueUpdate');
-            } else if (String(number) === process.env.HOTLINE1_NUMBER) {
+            } else if (String(dialedNumber) === process.env.HOTLINE1_NUMBER) {
                 mainQueue.removeCall(callId);
                 event.emit('mainQueueUpdate');
             }
         }
 
+        const callEndingData = { callId };
+        const keyEndedReason = await db.keyEndedReason.findOne({ where: { reason: data.reason } });
+
+        callEndingData.keyEndedReasonId = keyEndedReason.id;
+        callEndingData.callEndingTime = _.get(data, 'timestamp') || new Date();
+
         await db.sequelize.transaction(async (t) => {
             await db.callEnding.create(callEndingData, { transaction: t });
         });
 
-        ongoingCallService.removeOngoingCall({ callId });
-
         this.wait()
             .then(() => {
-                this.processCall(callId, number);
+                this.processCall(callId, dialedNumber);
             });
     }
 
@@ -325,7 +323,7 @@ class CallProcessingController {
     /**
      *
      * @param {string} callId
-     * @param {number} isOutbound
+     * @param {number} calledNumber
      */
     async processCall(callId, calledNumber) {
         const [
@@ -359,6 +357,7 @@ class CallProcessingController {
                 await t.commit();
             } catch (error) {
                 await t.rollback();
+                throw error;
             }
             return;
         }
@@ -428,8 +427,8 @@ class CallProcessingController {
             await existingCaller.save();
             return existingCaller;
         }
-        const newCaller = await db.caller.create(writeData, { transaction: t });
-        return newCaller;
+
+        return db.caller.create(writeData, { transaction: t });
     }
 }
 
