@@ -60,16 +60,27 @@ class WebAccessRoutes {
         res.status(200).send({ count });
     }
 
+    /**
+     * GET Request handler for daily call information
+     * @param req
+     * @param res
+     * @param next
+     * @returns {Promise<void>}
+     */
     async getDailyInboundReachability(req, res, next) {
         const day = _.get(req.query, 'day');
 
-        let count;
-        if (day) {
-            count = await this.callInfoController.getReachability(new Date(day), new Date(day));
-        } else {
-            count = await this.callInfoController.getReachability();
+        try {
+            let count;
+            if (day) {
+                count = await this.callInfoController.getReachability(new Date(day), new Date(day));
+            } else {
+                count = await this.callInfoController.getReachability();
+            }
+            res.status(200).send({ reachability: 100, numberOfCalls: count });
+        } catch (err) {
+            next(err);
         }
-        res.status(200).send({ reachability: 100, numberOfCalls: count });
     }
 
     async getAllCalls(req, res, next) {

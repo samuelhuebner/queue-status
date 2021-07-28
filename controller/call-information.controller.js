@@ -151,20 +151,32 @@ class CallInformationController {
 
         const promises = [];
 
-        promises.push(db.callInitiation.count({
+        promises.push(db.call.count({
             where: {
-                callInitiationTime: {
-                    [Op.between]: [start, end]
+                callDirection: 'inbound'
+            },
+            include: {
+                model: db.callInitiation,
+                where: {
+                    callInitiationTime: {
+                        [Op.between]: [start, end]
+                    }
                 }
             }
         }));
 
-        promises.push(db.callEnding.count({
+        promises.push(db.call.count({
             where: {
-                [Op.and]: [
-                    { callEndingTime: { [Op.between]: [start, end] } },
-                    { keyEndedReasonId: 1 }
-                ]
+                callDirection: 'inbound'
+            },
+            include: {
+                model: db.callEnding,
+                where: {
+                    [Op.and]: [
+                        { callEndingTime: { [Op.between]: [start, end] } },
+                        { keyEndedReasonId: 1 }
+                    ]
+                }
             }
         }));
 
@@ -173,10 +185,16 @@ class CallInformationController {
             successfulCalls
         ] = await Promise.all(promises);
 
-        return {
-            callInitCount,
-            successfulCalls
-        };
+        return [
+            {
+                name: 'successful',
+                value: successfulCalls
+            },
+            {
+                name: 'unsuccessful',
+                value: callInitCount - successfulCalls
+            }
+        ];
     }
 }
 
