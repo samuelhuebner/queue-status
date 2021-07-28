@@ -71,13 +71,13 @@ class WebAccessRoutes {
         const day = _.get(req.query, 'day');
 
         try {
-            let count;
+            let reachability;
             if (day) {
-                count = await this.callInfoController.getReachability(new Date(day), new Date(day));
+                reachability = await this.callInfoController.getReachability(new Date(day), new Date(day));
             } else {
-                count = await this.callInfoController.getReachability();
+                reachability = await this.callInfoController.getReachability();
             }
-            res.status(200).send({ reachability: 100, numberOfCalls: count });
+            res.status(200).send(reachability);
         } catch (err) {
             next(err);
         }
