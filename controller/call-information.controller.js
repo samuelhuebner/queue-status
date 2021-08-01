@@ -97,7 +97,6 @@ class CallInformationController {
                 }
 
                 call.endingReason = 'no-answer';
-
                 break;
             default:
                 call.endingReason = reason;
@@ -149,43 +148,18 @@ class CallInformationController {
         start.setHours(0, 0, 0, 0);
         end.setHours(23, 59, 59, 59);
 
-        const promises = [];
+        const calls = await this.getCalls(start, end);
 
-        promises.push(db.call.count({
-            where: {
-                callDirection: 'inbound'
-            },
-            include: {
-                model: db.callInitiation,
-                where: {
-                    callInitiationTime: {
-                        [Op.between]: [start, end]
-                    }
-                }
+        const callCount = calls.length;
+        let successfulCalls = 0;
+
+        calls.forEach((call) => {
+            const processedCall = this.processCall(call);
+
+            if (processedCall.endingReason === 'completed') {
+                successfulCalls += 1;
             }
-        }));
-
-        promises.push(db.call.count({
-            where: {
-                [Op.and]: [
-                    { callDirection: 'inbound' },
-                    { wasSuccessful: 1 }
-                ]
-            },
-            include: {
-                model: db.callEnding,
-                where: {
-                    [Op.and]: [
-                        { callEndingTime: { [Op.between]: [start, end] } }
-                    ]
-                }
-            }
-        }));
-
-        const [
-            callInitCount,
-            successfulCalls
-        ] = await Promise.all(promises);
+        });
 
         return [
             {
@@ -194,7 +168,7 @@ class CallInformationController {
             },
             {
                 name: 'unsuccessful',
-                value: callInitCount - successfulCalls
+                value: callCount - successfulCalls
             }
         ];
     }
