@@ -167,14 +167,16 @@ class CallInformationController {
 
         promises.push(db.call.count({
             where: {
-                callDirection: 'inbound'
+                [Op.and]: [
+                    { callDirection: 'inbound' },
+                    { wasSuccessful: 1 }
+                ]
             },
             include: {
                 model: db.callEnding,
                 where: {
                     [Op.and]: [
-                        { callEndingTime: { [Op.between]: [start, end] } },
-                        { keyEndedReasonId: 1 }
+                        { callEndingTime: { [Op.between]: [start, end] } }
                     ]
                 }
             }
