@@ -385,7 +385,7 @@ class CallProcessingController {
 
         const phoneNumber = _.get(data, 'caller.number');
 
-        if (phoneNumber && phoneNumber.length === 3) {
+        if (phoneNumber instanceof String && phoneNumber.length === 3) {
             writeData.accountNumber = phoneNumber;
         } else {
             writeData.phoneNumber = phoneNumber;
