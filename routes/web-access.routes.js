@@ -17,6 +17,8 @@ class WebAccessRoutes {
         this.router.get('/queue-status/hotline1', this.getHotlineOneStatus.bind(this));
         this.router.get('/queue-status/hotline2', this.getHotlineTwoStatus.bind(this));
 
+        this.router.post('/queue-status/hotline/reset', this.resetHotlineStatus.bind(this));
+
         this.router.get('/call-stats/current', this.getCurrentCalls.bind(this));
         this.router.get('/call-stats/current/:id', this.getCall.bind(this));
         this.router.post('/call-stats/current/', this.removeStuckCall.bind(this));
@@ -25,6 +27,8 @@ class WebAccessRoutes {
         this.router.get('/call-stats/daily-reachability', this.getDailyInboundReachability.bind(this));
 
         this.router.get('/call-stats/calls', this.getAllCalls.bind(this));
+        this.router.get('/call-stats/destinations', this.getDestinationsHandler.bind(this));
+        this.router.get('/call-stats/destinations/:id', this.getDestinationsHandler.bind(this));
     }
 
     getHotlineOneStatus(req, res, next) {
@@ -34,6 +38,12 @@ class WebAccessRoutes {
         } catch (error) {
             next(error);
         }
+    }
+
+    resetHotlineStatus(req, res, next) {
+        const hotlineNumber = parseInt(_.get(req.body, 'hotlineId'));
+        this.queueInfoController.resetHotline(hotlineNumber);
+        res.status(200).send();
     }
 
     getHotlineTwoStatus(req, res, next) {
@@ -50,16 +60,27 @@ class WebAccessRoutes {
         res.status(200).send({ count });
     }
 
+    /**
+     * GET Request handler for daily call information
+     * @param req
+     * @param res
+     * @param next
+     * @returns {Promise<void>}
+     */
     async getDailyInboundReachability(req, res, next) {
         const day = _.get(req.query, 'day');
 
-        let count;
-        if (day) {
-            count = await this.callInfoController.getReachability(new Date(day), new Date(day));
-        } else {
-            count = await this.callInfoController.getReachability();
+        try {
+            let reachability;
+            if (day) {
+                reachability = await this.callInfoController.getReachability(new Date(day), new Date(day));
+            } else {
+                reachability = await this.callInfoController.getReachability();
+            }
+            res.status(200).send(reachability);
+        } catch (err) {
+            next(err);
         }
-        res.status(200).send({ reachability: 100, numberOfCalls: count });
     }
 
     async getAllCalls(req, res, next) {
@@ -82,6 +103,12 @@ class WebAccessRoutes {
         } catch (error) {
             next(error);
         }
+    }
+
+    getDestinationsHandler(req, res, next) {
+        this.callInfoController.getCallDestinations(req.params.id)
+            .then((result) => res.send(result))
+            .catch((error) => next(error));
     }
 
     async removeStuckCall(req, res, next) {

@@ -1,13 +1,29 @@
-const hailHotlineService = require('../services/hail-hotline.service');
-const mainHotlineService = require('../services/main-hotline.service');
+const { hailQueue, mainQueue } = require('../services/queue.service');
 
 class QueueInfoController {
     getHotlineOneQueueStatus() {
-        return mainHotlineService.length;
+        return mainQueue.length;
     }
 
     getHotlineTwoQueueStatus() {
-        return hailHotlineService.length;
+        return hailQueue.length;
+    }
+
+    /**
+     * Resets the hotline counter to 0
+     * @param {number} hotlineId
+     */
+    resetHotline(hotlineId) {
+        switch (hotlineId) {
+            case 1:
+                mainQueue.resetHotline();
+                break;
+            case 2:
+                hailQueue.resetHotline();
+                break;
+            default:
+                break;
+        }
     }
 }
 

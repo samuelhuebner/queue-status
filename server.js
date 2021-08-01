@@ -49,6 +49,14 @@ class Server {
             this.io.sockets.emit('updatehotline2');
         });
 
+        event.on('updatehotline1', () => {
+            this.io.sockets.emit('updatehotline1');
+        });
+
+        event.on('updatehotline2', () => {
+            this.io.sockets.emit('updatehotline2');
+        });
+
         event.on('mainQueueUpdate', () => {
             this.io.sockets.emit('updatehotline1');
         });

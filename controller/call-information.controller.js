@@ -35,6 +35,19 @@ class CallInformationController {
     }
 
     /**
+     * Gets call Destinations related to a user if a contact iD is specified. Otherwise all destinations are returned
+     *
+     * @param {number} contactId
+     */
+    async getCallDestinations(contactId) {
+        if (!contactId) {
+            return db.callDestination.findAll();
+        }
+
+        return db.callDestination.findAll({ where: { contactId } });
+    }
+
+    /**
      * This function gets all calls from the database which lay inbetween the given start and end Date
      * If no Date is specified the current Date is initialized as the search parameter
      * @param {Date} startDate
@@ -44,30 +57,33 @@ class CallInformationController {
         startDate.setHours(0, 0, 0, 0);
         endDate.setHours(23, 59, 59, 59);
 
-        const calls = await db.call.findAll({
-            include: [
-                {
-                    model: db.callInitiation,
-                    where: { callInitiationTime: { [Op.between]: [startDate, endDate] } }
-                },
-                { model: db.callRinging, include: [db.callDestination] },
-                { model: db.callEnding, include: [db.keyEndedReason] },
-                db.callPickup,
-                db.caller
-            ],
-            order: [
-                [{ model: db.callInitiation }, 'callInitiationTime', 'DESC']
-            ]
-        });
+        try {
+            const calls = await db.call.findAll({
+                include: [
+                    {
+                        model: db.callInitiation,
+                        where: { callInitiationTime: { [Op.between]: [startDate, endDate] } }
+                    },
+                    { model: db.callRinging, include: [db.callDestination] },
+                    { model: db.callEnding, include: [db.keyEndedReason] },
+                    db.callPickup,
+                    db.caller
+                ],
+                order: [
+                    [{ model: db.callInitiation }, 'callInitiationTime', 'DESC']
+                ]
+            });
 
-        const filtered = calls.filter((call) => call.callEnding);
+            const filtered = calls.filter((call) => call.callEnding);
 
-        filtered.forEach((item, index) => {
-            filtered[index] = this.processCall(item.toJSON());
-        });
-
-        console.log('sending calls');
-        return filtered;
+            filtered.forEach((item, index) => {
+                filtered[index] = this.processCall(item.toJSON());
+            });
+            return filtered;
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
     }
 
     processCall(call) {
@@ -81,7 +97,6 @@ class CallInformationController {
                 }
 
                 call.endingReason = 'no-answer';
-
                 break;
             default:
                 call.endingReason = reason;
@@ -133,34 +148,29 @@ class CallInformationController {
         start.setHours(0, 0, 0, 0);
         end.setHours(23, 59, 59, 59);
 
-        const promises = [];
+        const calls = await this.getCalls(start, end);
 
-        promises.push(db.callInitiation.count({
-            where: {
-                callInitiationTime: {
-                    [Op.between]: [start, end]
-                }
+        const callCount = calls.length;
+        let successfulCalls = 0;
+
+        calls.forEach((call) => {
+            const processedCall = this.processCall(call);
+
+            if (processedCall.endingReason === 'completed') {
+                successfulCalls += 1;
             }
-        }));
+        });
 
-        promises.push(db.callEnding.count({
-            where: {
-                [Op.and]: [
-                    { callEndingTime: { [Op.between]: [start, end] } },
-                    { keyEndedReasonId: 1 }
-                ]
+        return [
+            {
+                name: 'successful',
+                value: successfulCalls
+            },
+            {
+                name: 'unsuccessful',
+                value: callCount - successfulCalls
             }
-        }));
-
-        const [
-            callInitCount,
-            successfulCalls
-        ] = await Promise.all(promises);
-
-        return {
-            callInitCount,
-            successfulCalls
-        };
+        ];
     }
 }
 

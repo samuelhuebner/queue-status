@@ -18,6 +18,10 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.TINYINT(1),
             defaultValue: 0,
             allowNull: false
+        },
+        contactId: {
+            type: DataTypes.INTEGER.UNSIGNED,
+            allowNull: true
         }
     }, { tableName: 'callDestination', timestamps: false });
 
